@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HamsterBall WebGL</title>
+    <style>
+        body {
+            background: #dddddd;
+        }
+        #my_Canvas {
+            margin: 10px;
+            padding: 10px;
+            background: #ffffff;
+            border: thin inset #aaaaaa;
+        }
+        .container {  /*to manage text on canvas and webgl */
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas width="800" height="600" id="screen"></canvas>
+</div>
+</body>
+<script type="text/javascript" src="Libs/webgl-utils.js"></script>
+<script type="text/javascript" src="Libs/m4.js"></script>
+<script type="module" src="main.js"></script>
+</html>

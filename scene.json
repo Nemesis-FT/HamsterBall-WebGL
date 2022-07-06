@@ -1,0 +1,4 @@
+{
+  "name": "Test",
+  "objs": ["Models/boeing_3.obj"]
+}
