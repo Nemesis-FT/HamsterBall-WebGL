@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <title>HamsterBall WebGL</title>
     <style>
+        @font-face {
+            font-family: 'Windows'; /*a name to be used later*/
+            src: url('./Style/Fonts/w-95-sans-serif.woff2') format('woff2'),
+            url('./Style/Fonts/w-95-sans-serif.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
         body {
-            background: #000000;
+            background: #008081;
         }
         #screen {
             margin: 10px;
@@ -13,14 +20,33 @@
             background: #ffffff;
             border: thin inset #aaaaaa;
         }
+        .window{
+            background: #c0c0c0 ;
+        }
+        .bar{
+            background: #000181;
+            font-family: Windows,serif;
+            color: #ffffff;
+            text-align: center;
+        }
         .container {  /*to manage text on canvas and webgl */
-            position: relative;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <div class="window">
+        <div class="bar">
+            WebGL Application
+        </div>
     <canvas width="800" height="600" id="screen"></canvas>
+    </div>
 </div>
 </body>
 <script type="text/javascript" src="Libs/webgl-utils.js"></script>
