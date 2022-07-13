@@ -1,5 +1,7 @@
 //This class is a refactor of code written by Professor Casciola from Unibo.
 
+import {PhysObject} from "./PhysObject.js";
+
 export class MeshLoader{
     constructor(list) {
         this.list = list;
@@ -64,7 +66,7 @@ export class MeshLoader{
     async getData(mesh){
         await this.obj_loader(mesh);
         if(mesh.fileMtl){
-            await this.mtl_loader(mesh.source.substring(0, mesh.source.lastIndexOf("/"+1))+mesh.fileMtl, mesh.data)
+            await this.mtl_loader(mesh.source.substring(0, mesh.source.lastIndexOf("/"))+"/"+mesh.fileMtl, mesh.data)
         }
     }
 
@@ -72,8 +74,8 @@ export class MeshLoader{
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
-        Unitize(mesh)
-        let map = mesh.materials[1].parameter;
+        Unitize(mesh.data)
+        let map = mesh.data.materials[1].parameter;
         let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
         map.set("map_Kd", this.texture_loader(gl, path, map.get("map_Kd")));
 
@@ -113,21 +115,21 @@ export class MeshLoader{
         mesh.numVertices=3*n_face;
 
         if (mesh.fileMtl == null){
-            mesh.ambient=mesh.materials[0].parameter.get("Ka");
-            mesh.diffuse=mesh.materials[0].parameter.get("Kd");
-            mesh.specular=mesh.materials[0].parameter.get("Ks");
-            mesh.emissive=mesh.materials[0].parameter.get("Ke");
-            mesh.shininess=mesh.materials[0].parameter.get("Ns");
-            mesh.opacity=mesh.materials[0].parameter.get("Ni");
+            mesh.ambient=mesh.data.materials[0].parameter.get("Ka");
+            mesh.diffuse=mesh.data.materials[0].parameter.get("Kd");
+            mesh.specular=mesh.data.materials[0].parameter.get("Ks");
+            mesh.emissive=mesh.data.materials[0].parameter.get("Ke");
+            mesh.shininess=mesh.data.materials[0].parameter.get("Ns");
+            mesh.opacity=mesh.data.materials[0].parameter.get("Ni");
         }
         else{
-            mesh.ambient=mesh.materials[1].parameter.get("Ka");
-            mesh.diffuse=mesh.materials[1].parameter.get("Kd");
-            mesh.specular=mesh.materials[1].parameter.get("Ks");
-            mesh.emissive=mesh.materials[1].parameter.get("Ke");
-            mesh.shininess=mesh.materials[1].parameter.get("Ns");
-            mesh.opacity=mesh.materials[1].parameter.get("Ni");
+            mesh.ambient=mesh.data.materials[1].parameter.get("Ka");
+            mesh.diffuse=mesh.data.materials[1].parameter.get("Kd");
+            mesh.specular=mesh.data.materials[1].parameter.get("Ks");
+            mesh.emissive=mesh.data.materials[1].parameter.get("Ke");
+            mesh.shininess=mesh.data.materials[1].parameter.get("Ns");
+            mesh.opacity=mesh.data.materials[1].parameter.get("Ni");
         }
-
+        this.list.push(new PhysObject(mesh, "Test", true))
     }
 }
