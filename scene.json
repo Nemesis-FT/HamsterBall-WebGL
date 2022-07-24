@@ -1,4 +1,27 @@
 {
   "name": "Test",
-  "objs": ["Models/boeing_3.obj"]
+  "objs": [
+    {
+      "alias": "Ball",
+      "path": "Models/Ball.obj",
+      "player": "true",
+      "active": "true",
+      "coords": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "alias": "Ground",
+      "path": "Models/Ground.obj",
+      "player": "false",
+      "active": "false",
+      "coords": {
+        "x": 0,
+        "y": -1.5,
+        "z": 0
+      }
+    }
+  ]
 }

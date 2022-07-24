@@ -1,28 +1,94 @@
+import {PlayerController} from "./PlayerController.js";
+
 export class PhysObject {
-    constructor(mesh, alias, isActive) {
+    constructor(mesh, alias, isActive, isPlayer, offsets) {
         this.mesh = mesh;
         this.alias = alias;
-        this.isActive = isActive;
+        this.isActive = isActive==="true";
         this.speed = {x: 0.0, y: 0.0, z: 0.0};
         this.accel = {x: 0.0, y: 0.0, z: 0.0};
+        this.position = {x:offsets.x, y:offsets.y, z:offsets.z}
+        this.isPlayer = isPlayer==="true";
+        if(this.isPlayer){
+            this.pc = new PlayerController(this)
+        }
+        this.compute_position()
+        console.debug(this)
     }
 
-    compute_phys() {
+    compute_phys(physobjs) {
         if(this.isActive){
-            if(this.is_colliding()){
-                // put accel and speed to 0 on desired axis
+            if(this.is_colliding(physobjs)){
+                this.accel.x = this.accel.y = this.accel.z = 0.0;
+                this.speed.x = this.speed.y = this.speed.z = 0.0;
             }
+            else{
+                this.accel.y = -0.001;
+            }
+            // add section for input control
+            this.speed.x += this.accel.x;
+            this.speed.y += this.accel.y;
+            this.speed.z += this.accel.z;
+            this.position.x += this.speed.x;
+            this.position.y += this.speed.y;
+            this.position.z += this.speed.z;
+            let i = 0;
+            while(i<this.mesh.positions.length){
+                this.mesh.positions[i] += parseFloat(this.speed.z);
+                this.mesh.positions[i+1] += parseFloat(this.speed.x);
+                this.mesh.positions[i+2] += parseFloat(this.speed.y);
+                i=i+3;
+            }
+            //this.compute_position();
         }
     }
 
-    is_colliding(){
-        // Compute collisions with other meshes
+    is_colliding(physobjs){
+        let res = this.compute_bounds()
+        let coll = false
+        for(const obj in physobjs){
+            let target = physobjs[obj].compute_bounds()
+            if(physobjs[obj].alias !== this.alias){
+                if((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
+                    (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
+                    (res.min.z <= target.min.z && res.max.z >= target.min.z)){
+                    coll = true;
+                }
+            }
+        }
+        return coll;
+    }
+
+    compute_bounds(){
+        let xpos = []
+        let ypos = []
+        let zpos = []
+        let i = 0;
+        while(i<this.mesh.positions.length){
+            zpos.push(this.mesh.positions[i])
+            ypos.push(this.mesh.positions[i+1])
+            xpos.push(this.mesh.positions[i+2])
+            i=i+3;
+        }
+        return {max:{x:Math.max(...xpos), y:Math.max(...ypos), z:Math.max(...zpos)},
+                min:{x:Math.min(...xpos), y:Math.min(...ypos), z:Math.min(...zpos)}}
     }
 
     set_accel(accel) {
         if (this.isActive) {
             this.accel = accel;
         }
+    }
+
+    compute_position(){
+        let i=0;
+        while(i<this.mesh.positions.length){
+            this.mesh.positions[i] += parseFloat(this.position.z);
+            this.mesh.positions[i+1] += parseFloat(this.position.x);
+            this.mesh.positions[i+2] += parseFloat(this.position.y);
+            i=i+3;
+        }
+
     }
 
     render(gl, light){
@@ -63,32 +129,32 @@ export class PhysObject {
         gl.enableVertexAttribArray(texcoordLocation);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
         gl.vertexAttribPointer(texcoordLocation, size-1, type, normalize, stride, offset);
-        var fieldOfViewRadians = degToRad(30);
-        var modelXRotationRadians = degToRad(0);
-        var modelYRotationRadians = degToRad(0);
+        let fieldOfViewRadians = degToRad(45);
+        let modelXRotationRadians = degToRad(0);
+        let modelYRotationRadians = degToRad(0);
 
         // Compute the projection matrix
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         //  zmin=0.125;
-        var zmin=0.1;
-        var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 200);
+        let zmin=0.1;
+        let projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 200);
 
-        var cameraPosition = [4.5, 4.5, 2];
-        var up = [0, 0, 1];
-        var target = [0, 0, 0];
+        let cameraPosition = [4.5, -4.5, 4.5];
+        let up = [0, 0, 1];
+        let target = [0, 0, 0];
 
         // Compute the camera's matrix using look at.
-        var cameraMatrix = m4.lookAt(cameraPosition, target, up);
+        let cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
         // Make a view matrix from the camera matrix.
-        var viewMatrix = m4.inverse(cameraMatrix);
+        let viewMatrix = m4.inverse(cameraMatrix);
 
-        var matrixLocation = gl.getUniformLocation(program, "u_world");
-        var textureLocation = gl.getUniformLocation(program, "diffuseMap");
-        var viewMatrixLocation = gl.getUniformLocation(program, "u_view");
-        var projectionMatrixLocation = gl.getUniformLocation(program, "u_projection");
-        var lightWorldDirectionLocation = gl.getUniformLocation(program, "u_lightDirection");
-        var viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
+        let matrixLocation = gl.getUniformLocation(program, "u_world");
+        let textureLocation = gl.getUniformLocation(program, "diffuseMap");
+        let viewMatrixLocation = gl.getUniformLocation(program, "u_view");
+        let projectionMatrixLocation = gl.getUniformLocation(program, "u_projection");
+        let lightWorldDirectionLocation = gl.getUniformLocation(program, "u_lightDirection");
+        let viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
 
         gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
         gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
@@ -114,10 +180,10 @@ export class PhysObject {
             return d * Math.PI / 180;
         }
 
-        var then = 0;
-        var vertNumber = this.mesh.numVertices;
+        let then = 0;
+        let vertNumber = this.mesh.numVertices;
 
-        requestAnimationFrame(drawScene);
+        drawScene(0)
 
         // Draw the scene.
         function drawScene(time) {
@@ -135,13 +201,11 @@ export class PhysObject {
             gl.enable(gl.DEPTH_TEST);
 
             // Animate the rotation
-            //modelYRotationRadians += -0.7 * deltaTime;
-            //modelXRotationRadians += -0.4 * deltaTime;
+            //modelYRotationRadians += -0.5 * deltaTime;
+            //modelXRotationRadians += -0.5 * deltaTime;
 
-            // Clear the canvas AND the depth buffer.
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            var matrix = m4.identity();
+            let matrix = m4.identity();
             matrix = m4.xRotate(matrix, modelXRotationRadians);
             matrix = m4.yRotate(matrix, modelYRotationRadians);
 
@@ -151,7 +215,6 @@ export class PhysObject {
             // Draw the geometry.
             gl.drawArrays(gl.TRIANGLES, 0, vertNumber);
 
-            requestAnimationFrame(drawScene);
         }
     }
 }

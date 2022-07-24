@@ -2,6 +2,7 @@ export class Scene {
     constructor(name, objs) {
         this.name = name;
         this.objs = objs;
+        console.debug(objs)
     }
 }
 
