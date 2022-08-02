@@ -91,9 +91,8 @@ export class PhysObject {
 
     }
 
-    render(gl, light){
-        let program = webglUtils.createProgramFromScripts(gl, ["3d-vertex-shader", "3d-fragment-shader"])
-        gl.useProgram(program);
+    render(gl, light, program, tar){
+
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
         let texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
@@ -129,9 +128,7 @@ export class PhysObject {
         gl.enableVertexAttribArray(texcoordLocation);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
         gl.vertexAttribPointer(texcoordLocation, size-1, type, normalize, stride, offset);
-        let fieldOfViewRadians = degToRad(45);
-        let modelXRotationRadians = degToRad(0);
-        let modelYRotationRadians = degToRad(0);
+        let fieldOfViewRadians = degToRad(70);
 
         // Compute the projection matrix
         let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -141,10 +138,9 @@ export class PhysObject {
 
         let cameraPosition = [4.5, -4.5, 4.5];
         let up = [0, 0, 1];
-        let target = [0, 0, 0];
 
         // Compute the camera's matrix using look at.
-        let cameraMatrix = m4.lookAt(cameraPosition, target, up);
+        let cameraMatrix = m4.lookAt(cameraPosition, tar, up);
 
         // Make a view matrix from the camera matrix.
         let viewMatrix = m4.inverse(cameraMatrix);
@@ -179,42 +175,16 @@ export class PhysObject {
         function degToRad(d) {
             return d * Math.PI / 180;
         }
-
-        let then = 0;
         let vertNumber = this.mesh.numVertices;
-
         drawScene(0)
-
         // Draw the scene.
         function drawScene(time) {
-            // convert to seconds
-            time *= 0.001;
-            // Subtract the previous time from the current time
-            var deltaTime = time - then;
-            // Remember the current time for the next frame.
-            then = time;
-
-            // Tell WebGL how to convert from clip space to pixels
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-            //gl.enable(gl.CULL_FACE);
+            gl.enable(gl.CULL_FACE);
             gl.enable(gl.DEPTH_TEST);
-
-            // Animate the rotation
-            //modelYRotationRadians += -0.5 * deltaTime;
-            //modelXRotationRadians += -0.5 * deltaTime;
-
-
             let matrix = m4.identity();
-            matrix = m4.xRotate(matrix, modelXRotationRadians);
-            matrix = m4.yRotate(matrix, modelYRotationRadians);
-
-            // Set the matrix.
             gl.uniformMatrix4fv(matrixLocation, false, matrix);
-
-            // Draw the geometry.
             gl.drawArrays(gl.TRIANGLES, 0, vertNumber);
-
         }
     }
 }

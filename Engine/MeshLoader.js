@@ -73,7 +73,6 @@ export class MeshLoader {
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
-        Unitize(mesh.data)
         let map = mesh.data.materials[1].parameter;
         let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
         map.set("map_Kd", this.texture_loader(gl, path, map.get("map_Kd")));
