@@ -51,7 +51,7 @@ export class PhysObject {
             if(physobjs[obj].alias !== this.alias){
                 if((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
-                    (res.min.z <= target.min.z && res.max.z >= target.min.z)){
+                    (res.min.z <= target.max.z && res.max.z >= target.min.z)){
                     coll = true;
                 }
             }
