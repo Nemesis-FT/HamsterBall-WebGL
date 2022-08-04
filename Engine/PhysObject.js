@@ -25,6 +25,7 @@ export class PhysObject {
             else{
                 this.accel.y = -0.001;
             }
+            console.debug(this.accel)
             // add section for input control
             this.speed.x += this.accel.x;
             this.speed.y += this.accel.y;
@@ -54,6 +55,7 @@ export class PhysObject {
                     (res.min.z <= target.max.z && res.max.z >= target.min.z)){
                     coll = true;
                 }
+                // Se la box è sotto/sopra, collisione su Y, se la box è su x allora stop su x etc
             }
         }
         return coll;
