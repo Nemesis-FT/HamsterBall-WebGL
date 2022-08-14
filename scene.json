@@ -6,9 +6,22 @@
       "path": "Models/Ball.obj",
       "player": "true",
       "active": "true",
+      "collider": "box",
       "coords": {
         "x": 0,
         "y": 10,
+        "z": 0
+      }
+    },
+    {
+      "alias": "Ramp",
+      "path": "Models/Ramp.obj",
+      "player": "false",
+      "active": "false",
+      "collider": "ramp",
+      "coords": {
+        "x": 0,
+        "y": 0,
         "z": 0
       }
     },
@@ -17,10 +30,11 @@
       "path": "Models/Ground.obj",
       "player": "false",
       "active": "false",
+      "collider": "box",
       "coords": {
         "x": 0,
-        "y": 0,
-        "z": 0
+        "y": -4,
+        "z": 4
       }
     }
   ]

@@ -69,7 +69,7 @@ export class MeshLoader {
         }
     }
 
-    async load(filepath, gl, isPlayer, isActive,coords, alias) {
+    async load(filepath, gl, isPlayer, isActive,coords, alias, collider) {
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
@@ -129,6 +129,6 @@ export class MeshLoader {
         }
         //await this.compute_offsets(mesh, coords)
         console.debug(mesh);
-        this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords))
+        this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords, collider))
     }
 }

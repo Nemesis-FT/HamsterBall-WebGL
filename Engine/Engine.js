@@ -25,7 +25,7 @@ export class Engine {
         scene_curr = scene;
         console.debug(" Loading scene...")
         for (const obj of scene.objs) {
-            await this.loader.load(obj.path, this.gl, obj.player, obj.active, obj.coords, obj.alias)
+            await this.loader.load(obj.path, this.gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
         }
         console.debug(" Scene loaded.")
         meshlist = this.meshlist;
