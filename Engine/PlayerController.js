@@ -1,4 +1,4 @@
-let queue = [];
+let queue = {x:{p:false, n:false}, z:{p:false, n:false}};
 let obj = null;
 
 export class PlayerController{
@@ -13,6 +13,7 @@ export class PlayerController{
         window.addEventListener("keydown", this.keyDown, true)
         window.addEventListener("keyup", this.keyUp, true)
         console.debug("Controller installed.")
+        window.requestAnimationFrame(handler)
     }
 
     uninstall(){
@@ -20,17 +21,36 @@ export class PlayerController{
         window.removeEventListener("keyup", this.keyUp)
     }
 
+
+
     keyDown(e){
-        if(e.keyCode === 87) if(!queue.includes("w")) {queue.push("w");obj.accel.x=0.0005};
-        if(e.keyCode === 83) if(!queue.includes("s")) {queue.push("s");obj.accel.x=-0.0005};
-        if(e.keyCode === 65) if(!queue.includes("a"))queue.push("a");
-        if(e.keyCode === 68) if(!queue.includes("d"))queue.push("d");
+        console.debug(e)
+        if(e.keyCode === 87) queue.x.p=true;
+        if(e.keyCode === 83) queue.x.n=true;
+        if(e.keyCode === 65) queue.z.p=true;
+        if(e.keyCode === 68) queue.z.n=true;
     }
 
     keyUp(e){
-        if(e.keyCode === 87) queue.splice(queue.indexOf("w"),1);
-        if(e.keyCode === 83) queue.splice(queue.indexOf("s"),1);
-        if(e.keyCode === 65) queue.splice(queue.indexOf("a"),1);
-        if(e.keyCode === 68) queue.splice(queue.indexOf("d"),1);
+        if(e.keyCode === 87) queue.x.p=false;
+        if(e.keyCode === 83) queue.x.n=false;
+        if(e.keyCode === 65) queue.z.p=false;
+        if(e.keyCode === 68) queue.z.n=false;
     }
+}
+
+function handler(){
+    if(queue.x.p){
+        obj.accel.x=0.0005
+    }
+    if(queue.x.n){
+        obj.accel.x= -0.0005
+    }
+    if(queue.z.p){
+        obj.accel.z= -0.0005
+    }
+    if(queue.z.n){
+        obj.accel.z= 0.0005
+    }
+    window.requestAnimationFrame(handler)
 }

@@ -18,14 +18,52 @@ export class PhysObject {
 
     compute_phys(physobjs) {
         if(this.isActive){
-            if(this.is_colliding(physobjs)){
-                this.accel.x = this.accel.y = this.accel.z = 0.0;
-                this.speed.x = this.speed.y = this.speed.z = 0.0;
+            let check = this.is_colliding(physobjs)
+            
+            if(check.coll){
+                //console.debug(check, this.accel);
+                if(check.data.x.top && this.accel.x>=0){
+                    //this.accel.x = this.speed.x = 0
+                }
+                if(check.data.x.bottom && this.accel.x<=0){
+                    //this.accel.x = this.speed.x = 0
+                }
+                if(check.data.y.top && this.accel.y>=0){
+                    this.accel.y = this.speed.y = 0
+                }
+                if(check.data.y.bottom && this.accel.y<=0){
+                    this.accel.y = this.speed.y = 0
+                }
+                if(check.data.z.top && this.accel.z>=0){
+                    //this.accel.z = this.speed.z = 0
+                }
+                if(check.data.z.bottom && this.accel.z<=0){
+                    //this.accel.z = this.speed.z = 0
+                }
             }
             else{
                 this.accel.y = -0.001;
             }
-            console.debug(this.accel)
+            let attrition = 0.00001;
+            if(this.accel.x<-attrition){
+                this.accel.x += attrition;
+            }
+            else if(this.accel.x>attrition){
+                this.accel.x -= attrition;
+            }
+            else if(this.accel.x>-attrition && this.accel.x <attrition ){
+                this.speed.x = this.accel.x = 0;
+            }
+            if(this.accel.z<-attrition){
+                this.accel.z += attrition;
+            }
+            else if(this.accel.z>attrition){
+                this.accel.z -= attrition;
+            }
+            else if(this.accel.z>-attrition && this.accel.z <attrition ){
+                this.speed.z = this.accel.z = 0;
+            }
+            //console.debug(this.accel)
             // add section for input control
             this.speed.x += this.accel.x;
             this.speed.y += this.accel.y;
@@ -47,6 +85,7 @@ export class PhysObject {
     is_colliding(physobjs){
         let res = this.compute_bounds()
         let coll = false
+        let colliders = [];
         for(const obj in physobjs){
             let target = physobjs[obj].compute_bounds()
             if(physobjs[obj].alias !== this.alias){
@@ -54,11 +93,33 @@ export class PhysObject {
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
                     (res.min.z <= target.max.z && res.max.z >= target.min.z)){
                     coll = true;
+                    colliders.push(physobjs[obj])
                 }
                 // Se la box è sotto/sopra, collisione su Y, se la box è su x allora stop su x etc
             }
         }
-        return coll;
+        let data = {x: {top:false, bottom:false}, y:{top:false, bottom:false}, z:{top:false, bottom:false}}
+        for(const obj in colliders){
+            if(colliders[obj].position.x<=this.position.x){
+                data.x.bottom=true;
+            }
+            if(colliders[obj].position.x>this.position.x){
+                data.x.top=true;
+            }
+            if(colliders[obj].position.y<=this.position.y){
+                data.y.bottom=true;
+            }
+            if(colliders[obj].position.y>this.position.y){
+                data.y.top=true;
+            }
+            if(colliders[obj].position.z<=this.position.z){
+                data.z.bottom=true;
+            }
+            if(colliders[obj].position.z>this.position.z){
+                data.z.top=true;
+            }
+        }
+        return {coll:coll, data:data};
     }
 
     compute_bounds(){
@@ -138,7 +199,7 @@ export class PhysObject {
         let zmin=0.1;
         let projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 200);
 
-        let cameraPosition = [4.5, -4.5, 4.5];
+        let cameraPosition = [4.5+tar[0], -4.5+tar[1], 4.5+tar[2]];
         let up = [0, 0, 1];
 
         // Compute the camera's matrix using look at.
