@@ -22,18 +22,18 @@
       "coords": {
         "x": 0,
         "y": 0,
-        "z": 0
+        "z": -5
       }
     },
     {
       "alias": "Ground",
-      "path": "Models/Ground.obj",
+      "path": "Models/Pillar.obj",
       "player": "false",
       "active": "false",
       "collider": "box",
       "coords": {
         "x": 0,
-        "y": -4,
+        "y": -30,
         "z": 4
       }
     }

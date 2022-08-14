@@ -62,6 +62,7 @@ export class MeshLoader {
             return (value & (value - 1)) === 0;
         }
     }
+
     async getData(mesh) {
         await this.obj_loader(mesh);
         if (mesh.fileMtl) {
@@ -69,66 +70,70 @@ export class MeshLoader {
         }
     }
 
-    async load(filepath, gl, isPlayer, isActive,coords, alias, collider) {
+    async load(filepath, gl, isPlayer, isActive, coords, alias, collider) {
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
-        let map = mesh.data.materials[1].parameter;
-        let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
-        map.set("map_Kd", this.texture_loader(gl, path, map.get("map_Kd")));
+        for (let i = 0; i < mesh.data.materials.length; i++) {
+            let map = mesh.data.materials[i].parameter;
+            let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
+            let a = await this.texture_loader(gl, path, map.get("map_Kd"))
+            map.set("map_Kd", a);
 
-        let x = [], y = [], z = [];
-        let xt = [], yt = [];
-        let i0, i1, i2;
-        let n_vert = mesh.data.nvert;
-        let n_face = mesh.data.nface;
-        let n_text_coord = mesh.data.textCoords.length;
-        mesh.positions = [];
-        mesh.normals = [];
-        mesh.text_coords = [];
 
-        for (let i = 0; i < n_vert; i++) {
-            x[i] = mesh.data.vert[i + 1].x;
-            y[i] = mesh.data.vert[i + 1].y;
-            z[i] = mesh.data.vert[i + 1].z;
-        }
-        for (let i = 0; i < n_text_coord - 1; i++) {
-            xt[i] = mesh.data.textCoords[i + 1].u;
-            yt[i] = mesh.data.textCoords[i + 1].v;
-        }
-        for (let i = 1; i <= n_face; i++) {
-            i0 = mesh.data.face[i].vert[0] - 1;
-            i1 = mesh.data.face[i].vert[1] - 1;
-            i2 = mesh.data.face[i].vert[2] - 1;
-            mesh.positions.push(x[i0], y[i0], z[i0], x[i1], y[i1], z[i1], x[i2], y[i2], z[i2]);
-            i0 = mesh.data.facetnorms[i].i;
-            i1 = mesh.data.facetnorms[i].j;
-            i2 = mesh.data.facetnorms[i].k;
-            mesh.normals.push(i0, i1, i2, i0, i1, i2, i0, i1, i2);
-            i0 = mesh.data.face[i].textCoordsIndex[0] - 1;
-            i1 = mesh.data.face[i].textCoordsIndex[1] - 1;
-            i2 = mesh.data.face[i].textCoordsIndex[2] - 1;
-            mesh.text_coords.push(xt[i0], yt[i0], xt[i1], yt[i1], xt[i2], yt[i2]);
-        }
-        mesh.numVertices = 3 * n_face;
+            let x = [], y = [], z = [];
+            let xt = [], yt = [];
+            let i0, i1, i2;
+            let n_vert = mesh.data.nvert;
+            let n_face = mesh.data.nface;
+            let n_text_coord = mesh.data.textCoords.length;
+            mesh.positions = [];
+            mesh.texture = a;
+            mesh.normals = [];
+            mesh.text_coords = [];
 
-        if (mesh.fileMtl == null) {
-            mesh.ambient = mesh.data.materials[0].parameter.get("Ka");
-            mesh.diffuse = mesh.data.materials[0].parameter.get("Kd");
-            mesh.specular = mesh.data.materials[0].parameter.get("Ks");
-            mesh.emissive = mesh.data.materials[0].parameter.get("Ke");
-            mesh.shininess = mesh.data.materials[0].parameter.get("Ns");
-            mesh.opacity = mesh.data.materials[0].parameter.get("Ni");
-        } else {
-            mesh.ambient = mesh.data.materials[1].parameter.get("Ka");
-            mesh.diffuse = mesh.data.materials[1].parameter.get("Kd");
-            mesh.specular = mesh.data.materials[1].parameter.get("Ks");
-            mesh.emissive = mesh.data.materials[1].parameter.get("Ke");
-            mesh.shininess = mesh.data.materials[1].parameter.get("Ns");
-            mesh.opacity = mesh.data.materials[1].parameter.get("Ni");
+            for (let i = 0; i < n_vert; i++) {
+                x[i] = mesh.data.vert[i + 1].x;
+                y[i] = mesh.data.vert[i + 1].y;
+                z[i] = mesh.data.vert[i + 1].z;
+            }
+            for (let i = 0; i < n_text_coord - 1; i++) {
+                xt[i] = mesh.data.textCoords[i + 1].u;
+                yt[i] = mesh.data.textCoords[i + 1].v;
+            }
+            for (let i = 1; i <= n_face; i++) {
+                i0 = mesh.data.face[i].vert[0] - 1;
+                i1 = mesh.data.face[i].vert[1] - 1;
+                i2 = mesh.data.face[i].vert[2] - 1;
+                mesh.positions.push(x[i0], y[i0], z[i0], x[i1], y[i1], z[i1], x[i2], y[i2], z[i2]);
+                i0 = mesh.data.facetnorms[i].i;
+                i1 = mesh.data.facetnorms[i].j;
+                i2 = mesh.data.facetnorms[i].k;
+                mesh.normals.push(i0, i1, i2, i0, i1, i2, i0, i1, i2);
+                i0 = mesh.data.face[i].textCoordsIndex[0] - 1;
+                i1 = mesh.data.face[i].textCoordsIndex[1] - 1;
+                i2 = mesh.data.face[i].textCoordsIndex[2] - 1;
+                mesh.text_coords.push(xt[i0], yt[i0], xt[i1], yt[i1], xt[i2], yt[i2]);
+            }
+            mesh.numVertices = 3 * n_face;
+
+            if (mesh.fileMtl == null) {
+                mesh.ambient = mesh.data.materials[0].parameter.get("Ka");
+                mesh.diffuse = mesh.data.materials[0].parameter.get("Kd");
+                mesh.specular = mesh.data.materials[0].parameter.get("Ks");
+                mesh.emissive = mesh.data.materials[0].parameter.get("Ke");
+                mesh.shininess = mesh.data.materials[0].parameter.get("Ns");
+                mesh.opacity = mesh.data.materials[0].parameter.get("Ni");
+            } else {
+                mesh.ambient = mesh.data.materials[1].parameter.get("Ka");
+                mesh.diffuse = mesh.data.materials[1].parameter.get("Kd");
+                mesh.specular = mesh.data.materials[1].parameter.get("Ks");
+                mesh.emissive = mesh.data.materials[1].parameter.get("Ke");
+                mesh.shininess = mesh.data.materials[1].parameter.get("Ns");
+                mesh.opacity = mesh.data.materials[1].parameter.get("Ni");
+            }
         }
         //await this.compute_offsets(mesh, coords)
-        console.debug(mesh);
         this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords, collider))
     }
 }

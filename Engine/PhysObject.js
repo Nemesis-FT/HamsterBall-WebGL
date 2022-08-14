@@ -20,7 +20,6 @@ export class PhysObject {
     compute_phys(physobjs) {
         if (this.isActive) {
             let check = this.is_colliding(physobjs)
-            console.debug(check)
             if (check.coll) {
                 if(check.ramp){
                     this.accel.z = 0.0001;
@@ -241,10 +240,12 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(0)
+        drawScene(0, this.mesh)
+
 
         // Draw the scene.
-        function drawScene(time) {
+        function drawScene(time, mesh) {
+            gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.enable(gl.CULL_FACE);
             gl.enable(gl.DEPTH_TEST);

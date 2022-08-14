@@ -18,6 +18,7 @@ export class Engine {
         this.loader = new MeshLoader(this.meshlist)
         meshlist = this.meshlist;
         gl = this.gl
+
     }
 
     async load_scene(scene) {
