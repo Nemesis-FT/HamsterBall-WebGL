@@ -40,8 +40,8 @@ let curr_time = 0;
 export async function render(time = 0) {
     let program = webglUtils.createProgramFromScripts(gl, ["3d-vertex-shader", "3d-fragment-shader"])
     gl.useProgram(program);
-    if (time - curr_time > 10) {
-        await meshlist.forEach(elem => {
+    if (time - curr_time > 0) {
+        meshlist.forEach(elem => {
             elem.compute_phys(meshlist)
         })
         curr_time = time
