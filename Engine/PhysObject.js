@@ -23,7 +23,7 @@ export class PhysObject {
             this.accel.y = -0.001;
             if (check.coll) {
                 if(check.ramp){
-                    this.accel.z = 0.001;
+                    this.accel.z = 0.0005;
                     this.accel.y = this.speed.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -32,24 +32,25 @@ export class PhysObject {
                 if (check.data.y.bottom && this.accel.y <= 0) {
                     this.accel.y = this.speed.y = 0
                 }
+                let attrition = 0.00001;
+                if (this.accel.x < -attrition && check.coll) {
+                    this.accel.x += attrition;
+                } else if (this.accel.x > attrition) {
+                    this.accel.x -= attrition;
+                } else if (this.accel.x > -attrition && this.accel.x < attrition) {
+                    this.speed.x = this.accel.x = 0;
+                }
+                if (this.accel.z < -attrition) {
+                    this.accel.z += attrition;
+                } else if (this.accel.z > attrition) {
+                    this.accel.z -= attrition;
+                } else if (this.accel.z > -attrition && this.accel.z < attrition) {
+                    this.speed.z = this.accel.z = 0;
+                }
             } else {
                 this.accel.y = -0.001;
             }
-            let attrition = 0.00001;
-            if (this.accel.x < -attrition) {
-                this.accel.x += attrition;
-            } else if (this.accel.x > attrition) {
-                this.accel.x -= attrition;
-            } else if (this.accel.x > -attrition && this.accel.x < attrition) {
-                this.speed.x = this.accel.x = 0;
-            }
-            if (this.accel.z < -attrition) {
-                this.accel.z += attrition;
-            } else if (this.accel.z > attrition) {
-                this.accel.z -= attrition;
-            } else if (this.accel.z > -attrition && this.accel.z < attrition) {
-                this.speed.z = this.accel.z = 0;
-            }
+
             this.speed.x += this.accel.x;
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
@@ -183,7 +184,6 @@ export class PhysObject {
         gl.uniform3fv(gl.getUniformLocation(program, "emissive"), this.mesh.emissive);
         gl.uniform3fv(gl.getUniformLocation(program, "u_ambientLight"), light.ambientLight);
         gl.uniform3fv(gl.getUniformLocation(program, "u_colorLight"), light.colorLight);
-
         gl.uniform1f(gl.getUniformLocation(program, "shininess"), this.mesh.shininess);
         gl.uniform1f(gl.getUniformLocation(program, "opacity"), this.mesh.opacity);
         gl.enableVertexAttribArray(positionLocation);
@@ -258,6 +258,7 @@ export class PhysObject {
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.enable(gl.CULL_FACE);
             gl.enable(gl.DEPTH_TEST);
+
             let matrix = m4.identity();
             gl.uniformMatrix4fv(matrixLocation, false, matrix);
             gl.drawArrays(gl.TRIANGLES, 0, vertNumber);

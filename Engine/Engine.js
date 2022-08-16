@@ -9,7 +9,7 @@ export class Engine {
     constructor(id) {
         console.debug("Engine booting up...")
         this.canvas = document.getElementById(id);
-        this.gl = this.canvas.getContext("webgl");
+        this.gl = this.canvas.getContext("webgl",{antialias: true});
         if (!this.gl) {
             alert("This browser does not support opengl acceleration.")
             return;
