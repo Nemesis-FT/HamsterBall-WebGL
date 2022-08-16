@@ -2,6 +2,7 @@ import {MeshLoader} from "./MeshLoader.js";
 
 let meshlist = [];
 let gl;
+let ext;
 let scene_curr;
 
 export class Engine {
@@ -11,6 +12,11 @@ export class Engine {
         this.gl = this.canvas.getContext("webgl");
         if (!this.gl) {
             alert("This browser does not support opengl acceleration.")
+            return;
+        }
+        ext = this.gl.getExtension('WEBGL_depth_texture');
+        if(!ext){
+            alert("This system does not support the Depth Texture Extension.")
             return;
         }
         this.meshlist = [];
@@ -40,13 +46,11 @@ let curr_time = 0;
 export async function render(time = 0) {
     let program = webglUtils.createProgramFromScripts(gl, ["3d-vertex-shader", "3d-fragment-shader"])
     gl.useProgram(program);
-    if (time - curr_time > 0) {
-        meshlist.forEach(elem => {
-            elem.compute_phys(meshlist)
-        })
-        curr_time = time
-    }
-    await meshlist.forEach(elem => {
+    meshlist.forEach(elem => {
+        elem.compute_phys(meshlist)
+    })
+    curr_time = time
+    meshlist.forEach(elem => {
         elem.render(gl, {ambientLight: [0.2, 0.2, 0.2], colorLight: [1.0, 1.0, 1.0]}, program, find_actor_coords());
     })
 

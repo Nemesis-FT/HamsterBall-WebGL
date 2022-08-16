@@ -23,7 +23,7 @@ export class PhysObject {
             this.accel.y = -0.001;
             if (check.coll) {
                 if(check.ramp){
-                    this.accel.z = 0.0001;
+                    this.accel.z = 0.001;
                     this.accel.y = this.speed.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -81,7 +81,7 @@ export class PhysObject {
                     if (physobjs[obj].collider === "ramp") {
                         let angular = (target.max.y - target.min.y) / (target.min.z - target.max.z )
                         let y_in_point = angular * this.position.z;
-                        if(this.position.y<y_in_point+0.1){
+                        if(this.position.y<y_in_point){
                             let y_in_point = angular * this.position.z;
                             this.position.y=y_in_point;
                             ramp = true;

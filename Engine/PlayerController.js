@@ -24,7 +24,6 @@ export class PlayerController{
 
 
     keyDown(e){
-        console.debug(e)
         if(e.keyCode === 87) queue.x.p=true;
         if(e.keyCode === 83) queue.x.n=true;
         if(e.keyCode === 65) queue.z.p=true;
