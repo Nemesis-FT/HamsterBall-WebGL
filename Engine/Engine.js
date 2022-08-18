@@ -45,16 +45,19 @@ export class Engine {
 }
 
 let curr_time = 0;
-
+let delta = 0;
 export async function render(time = 0) {
     let program = webglUtils.createProgramFromScripts(gl, ["3d-vertex-shader", "3d-fragment-shader"])
     gl.useProgram(program);
+    if(time-curr_time>33) {
+        meshlist.forEach(elem => {
+            elem.compute_phys(meshlist)
+        })
+        curr_time = time
+    }
+    delta = time-curr_time;
     meshlist.forEach(elem => {
-        elem.compute_phys(meshlist)
-    })
-    curr_time = time
-    meshlist.forEach(elem => {
-        elem.render(gl, {ambientLight: [0.2, 0.2, 0.2], colorLight: [1.0, 1.0, 1.0]}, program, find_actor_coords());
+        elem.render(delta, gl, {ambientLight: [0.2, 0.2, 0.2], colorLight: [1.0, 1.0, 1.0]}, program, find_actor_coords());
     })
 
     function degToRad(d) {

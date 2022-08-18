@@ -1,40 +1,28 @@
 {
-  "name": "Test",
+  "name": "Level",
   "objs": [
     {
-      "alias": "Ball",
-      "path": "Models/Ball.obj",
+      "alias": "Platform1",
+      "path": "Models/Platform1.obj",
+      "player": "false",
+      "active": "false",
+      "collider": "box",
+      "coords": {
+        "x": 0,
+        "y": -12,
+        "z": 0
+      }
+    },
+    {
+      "alias": "Player",
+      "path": "Models/Player.obj",
       "player": "true",
       "active": "true",
       "collider": "box",
       "coords": {
         "x": 0,
-        "y": 10,
+        "y": -24,
         "z": 0
-      }
-    },
-    {
-      "alias": "Ramp",
-      "path": "Models/Ramp.obj",
-      "player": "false",
-      "active": "false",
-      "collider": "ramp",
-      "coords": {
-        "x": 0,
-        "y": 0,
-        "z": -2
-      }
-    },
-    {
-      "alias": "Ground",
-      "path": "Models/Pillar.obj",
-      "player": "false",
-      "active": "false",
-      "collider": "box",
-      "coords": {
-        "x": 0,
-        "y": -25,
-        "z": 10
       }
     }
   ]

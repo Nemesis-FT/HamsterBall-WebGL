@@ -1,5 +1,4 @@
 import {PlayerController} from "./PlayerController.js";
-
 export class PhysObject {
     constructor(mesh, alias, isActive, isPlayer, offsets, collider) {
         this.mesh = mesh;
@@ -8,12 +7,14 @@ export class PhysObject {
         this.speed = {x: 0.0, y: 0.0, z: 0.0};
         this.accel = {x: 0.0, y: 0.0, z: 0.0};
         this.position = {x: offsets.x, y: offsets.y, z: offsets.z}
+        this.positions = this.mesh.positions
         this.isPlayer = isPlayer === "true";
         this.collider = collider
         if (this.isPlayer) {
             this.pc = new PlayerController(this)
         }
-        this.compute_position()
+        this.rotationRads = {x:0, y:0}
+        //this.compute_position()
         console.debug(this)
     }
 
@@ -21,10 +22,11 @@ export class PhysObject {
         if (this.isActive) {
             let check = this.is_colliding(physobjs)
             this.accel.y = -0.001;
+
             if (check.coll) {
-                if(check.ramp){
-                    this.accel.z = 0.0005;
-                    this.accel.y = this.speed.y = 0;
+                if (check.ramp) {
+                    //this.accel.z = this.speed.z = 0;
+                    this.accel.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
                     this.accel.y = this.speed.y = 0
@@ -32,7 +34,7 @@ export class PhysObject {
                 if (check.data.y.bottom && this.accel.y <= 0) {
                     this.accel.y = this.speed.y = 0
                 }
-                let attrition = 0.00001;
+                let attrition = 0.0001;
                 if (this.accel.x < -attrition && check.coll) {
                     this.accel.x += attrition;
                 } else if (this.accel.x > attrition) {
@@ -50,7 +52,7 @@ export class PhysObject {
             } else {
                 this.accel.y = -0.001;
             }
-
+            //console.debug(this.position.y, this.compute_bounds().min.y)
             this.speed.x += this.accel.x;
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
@@ -77,25 +79,31 @@ export class PhysObject {
             if (physobjs[obj].alias !== this.alias) {
                 if ((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
-                    (res.min.z <= target.max.z && res.max.z >= target.min.z)) {
+                    (res.min.z <= target.max.z && res.max.z >= target.min.z) && physobjs[obj].collider!=="skybox" && physobjs[obj].collider!=="death") {
                     colliders.push(physobjs[obj])
+                    coll = true;
                     if (physobjs[obj].collider === "ramp") {
                         let angular = (target.max.y - target.min.y) / (target.min.z - target.max.z )
-                        let y_in_point = angular * this.position.z;
-                        if(this.position.y<y_in_point){
-                            let y_in_point = angular * this.position.z;
-                            this.position.y=y_in_point;
+                        let y_in_point = angular * res.min.z + target.max.y+0.5;
+                        if(res.min.y<=y_in_point){
+                            let i = 0
+                            while (i < this.mesh.positions.length) {
+                                this.mesh.positions[i + 2] += parseFloat(y_in_point-res.min.y);
+                                i = i + 3;
+                            }
                             ramp = true;
                         }
                         else{
                             colliders.pop();
+                            coll = false;
                         }
 
                     }
-                    coll = true;
 
                 }
-
+                if(physobjs[obj].collider==="death" && target.min.y > res.min.y){
+                    window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "scene.json"}}))
+                }
             }
         }
         let data = {x: {top: false, bottom: false}, y: {top: false, bottom: false}, z: {top: false, bottom: false}}
@@ -137,8 +145,8 @@ export class PhysObject {
         let i = 0;
         while (i < this.mesh.positions.length) {
             zpos.push(this.mesh.positions[i])
-            ypos.push(this.mesh.positions[i + 1])
-            xpos.push(this.mesh.positions[i + 2])
+            ypos.push(this.mesh.positions[i + 2])
+            xpos.push(this.mesh.positions[i + 1])
             i = i + 3;
         }
         return {
@@ -153,18 +161,18 @@ export class PhysObject {
         }
     }
 
-    compute_position() {
+    compute_position(x, y, z) {
         let i = 0;
         while (i < this.mesh.positions.length) {
-            this.mesh.positions[i] += parseFloat(this.position.z);
-            this.mesh.positions[i + 1] += parseFloat(this.position.x);
-            this.mesh.positions[i + 2] += parseFloat(this.position.y);
+            this.mesh.positions[i] += parseFloat(x);
+            this.mesh.positions[i + 1] += parseFloat(y);
+            this.mesh.positions[i + 2] += parseFloat(z);
             i = i + 3;
         }
 
     }
 
-    render(gl, light, program, tar) {
+    render(deltaTime, gl, light, program, tar) {
 
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
@@ -178,14 +186,14 @@ export class PhysObject {
         this.texcoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.text_coords), gl.STATIC_DRAW);
-        gl.uniform3fv(gl.getUniformLocation(program, "diffuse"), this.mesh.diffuse);
-        gl.uniform3fv(gl.getUniformLocation(program, "ambient"), this.mesh.ambient);
-        gl.uniform3fv(gl.getUniformLocation(program, "specular"), this.mesh.specular);
-        gl.uniform3fv(gl.getUniformLocation(program, "emissive"), this.mesh.emissive);
+        gl.uniform3fv(gl.getUniformLocation(program, "diffuse"), (this.mesh.diffuse ? this.mesh.diffuse : [0.8, 0.8, 0.8]));
+        gl.uniform3fv(gl.getUniformLocation(program, "ambient"), (this.mesh.ambient ? this.mesh.ambient : [1, 1, 1]));
+        gl.uniform3fv(gl.getUniformLocation(program, "specular"), (this.mesh.specular ? this.mesh.specular : [0.5, 0.5, 0.5]));
+        gl.uniform3fv(gl.getUniformLocation(program, "emissive"), (this.mesh.emissive ? this.mesh.emissive : [0, 0, 0]));
         gl.uniform3fv(gl.getUniformLocation(program, "u_ambientLight"), light.ambientLight);
         gl.uniform3fv(gl.getUniformLocation(program, "u_colorLight"), light.colorLight);
-        gl.uniform1f(gl.getUniformLocation(program, "shininess"), this.mesh.shininess);
-        gl.uniform1f(gl.getUniformLocation(program, "opacity"), this.mesh.opacity);
+        gl.uniform1f(gl.getUniformLocation(program, "shininess"), (this.mesh.shininess ? this.mesh.shininess : 359.999993));
+        gl.uniform1f(gl.getUniformLocation(program, "opacity"), (this.mesh.opacity ? this.mesh.opacity : 1.45));
         gl.enableVertexAttribArray(positionLocation);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         const size = 3;          // 3 components per iteration
@@ -206,7 +214,7 @@ export class PhysObject {
         let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         //  zmin=0.125;
         let zmin = 0.1;
-        let projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 200);
+        let projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 2000);
 
         let cameraPosition = [4.5 + tar[0], -4.5 + tar[1], 4.5 + tar[2]];
         let up = [0, 0, 1];
@@ -249,18 +257,19 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(0, this.mesh)
+        drawScene(deltaTime, this.mesh)
 
 
         // Draw the scene.
-        function drawScene(time, mesh) {
+        function drawScene(deltaTime, mesh) {
             gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            gl.enable(gl.CULL_FACE);
             gl.enable(gl.DEPTH_TEST);
 
             let matrix = m4.identity();
+
             gl.uniformMatrix4fv(matrixLocation, false, matrix);
+
             gl.drawArrays(gl.TRIANGLES, 0, vertNumber);
         }
     }
