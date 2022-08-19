@@ -10,6 +10,8 @@ export class PhysObject {
         this.positions = this.mesh.positions
         this.isPlayer = isPlayer === "true";
         this.collider = collider
+        if(!this.isActive)
+            this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
             this.pc = new PlayerController(this)
         }
@@ -75,7 +77,14 @@ export class PhysObject {
         let colliders = [];
         let ramp = false;
         for (const obj in physobjs) {
-            let target = physobjs[obj].compute_bounds()
+
+            let target
+            if (physobjs[obj].isPlayer){
+                target = physobjs[obj].compute_bounds()
+            }
+            else{
+                target = physobjs[obj].boundingBox;
+            }
             if (physobjs[obj].alias !== this.alias) {
                 if ((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
