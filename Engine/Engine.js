@@ -9,7 +9,7 @@ let ui;
 
 export class Engine {
     constructor(id) {
-        console.debug("Engine booting up...")
+        console.debug("SlingShot Engine booting up...")
         this.canvas = document.getElementById(id);
 
         this.gl = this.canvas.getContext("webgl", {antialias: true});
@@ -63,15 +63,24 @@ export async function render(time = 0) {
         })
     }
     delta = time - curr_time;
+    let camera_coords = find_actor_coords()
+    console.debug(camera_coords)
     meshlist.forEach(elem => {
         elem.render(delta, gl, {
             ambientLight: [0.2, 0.2, 0.2],
             colorLight: [1.0, 1.0, 1.0]
-        }, program, find_actor_coords());
+        }, program, camera_coords);
     })
-    ui.clear()
-    ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 20}, scene_curr.name)
-    ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 40}, (time / 1000).toFixed(3))
+    if(scene_curr.name!=="menu"){
+        ui.clear()
+        ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 20}, scene_curr.name)
+        ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 40}, (time / 1000).toFixed(3))
+    }
+    else{
+        ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: gl.canvas.height/ 2}, "Press the Start button to begin")
+        ui.draw('14pt Calibri', "black", {x: gl.canvas.width / 2, y: gl.canvas.height-30}, "Powered by SlingShot Engine.")
+        ui.draw('14pt Calibri', "black", {x: gl.canvas.width / 2, y: gl.canvas.height-15}, "This program and its engine were developed by Lorenzo Balugani.")
+    }
     if (!scene_curr.die) {
 
         requestAnimationFrame(render)
@@ -89,5 +98,6 @@ function find_actor_coords() {
             break;
         }
     }
-    return [actor.mesh.positions[0], actor.mesh.positions[1], actor.mesh.positions[2]]
+    console.debug(actor.mesh.positions[0], actor.mesh.positions[1], actor.mesh.positions[2])
+    return [actor.position.x, actor.position.z, actor.position.y]
 }
