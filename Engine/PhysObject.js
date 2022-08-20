@@ -111,7 +111,7 @@ export class PhysObject {
 
                 }
                 if(physobjs[obj].collider==="death" && target.min.y > res.min.y){
-                    window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "scene.json"}}))
+                    window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "level1.json"}}))
                 }
             }
         }

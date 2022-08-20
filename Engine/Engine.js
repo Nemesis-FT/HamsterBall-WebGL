@@ -1,24 +1,25 @@
 import {MeshLoader} from "./MeshLoader.js";
+import {UI} from "./UI.js"
 
 let meshlist = [];
 let gl;
 let ext;
 let scene_curr;
+let ui;
 
 export class Engine {
     constructor(id) {
         console.debug("Engine booting up...")
         this.canvas = document.getElementById(id);
-        
-        this.gl = this.canvas.getContext("webgl",{antialias: true});
-        
+
+        this.gl = this.canvas.getContext("webgl", {antialias: true});
+
         if (!this.gl) {
             alert("This browser does not support opengl acceleration.")
             return;
         }
-        webglUtils.resizeCanvasToDisplaySize(this.gl.canvas);
         ext = this.gl.getExtension('WEBGL_depth_texture');
-        if(!ext){
+        if (!ext) {
             alert("This system does not support the Depth Texture Extension.")
             return;
         }
@@ -27,7 +28,8 @@ export class Engine {
         this.loader = new MeshLoader(this.meshlist)
         meshlist = this.meshlist;
         gl = this.gl
-
+        this.ui = new UI("ui")
+        ui = this.ui
     }
 
     async load_scene(scene) {
@@ -38,7 +40,12 @@ export class Engine {
             await this.loader.load(obj.path, this.gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
         }
         console.debug(" Scene loaded.")
+
         meshlist = this.meshlist;
+    }
+
+    kill() {
+        scene_curr.die = true;
     }
 
 
@@ -46,31 +53,32 @@ export class Engine {
 
 let curr_time = 0;
 let delta = 0;
+
 export async function render(time = 0) {
     let program = webglUtils.createProgramFromScripts(gl, ["3d-vertex-shader", "3d-fragment-shader"])
     gl.useProgram(program);
-    if(time-curr_time>0) {
+    if (scene_curr.phys) {
         meshlist.forEach(elem => {
             elem.compute_phys(meshlist)
         })
-        curr_time = time
     }
-    delta = time-curr_time;
+    delta = time - curr_time;
     meshlist.forEach(elem => {
-        elem.render(delta, gl, {ambientLight: [0.2, 0.2, 0.2], colorLight: [1.0, 1.0, 1.0]}, program, find_actor_coords());
+        elem.render(delta, gl, {
+            ambientLight: [0.2, 0.2, 0.2],
+            colorLight: [1.0, 1.0, 1.0]
+        }, program, find_actor_coords());
     })
+    ui.clear()
+    ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 20}, scene_curr.name)
+    ui.draw('18pt Calibri', "black", {x: gl.canvas.width / 2, y: 40}, (time / 1000).toFixed(3))
+    if (!scene_curr.die) {
 
-    function degToRad(d) {
-        return d * Math.PI / 180;
+        requestAnimationFrame(render)
+    } else {
+        console.debug("Killing engine...")
     }
 
-    function computeMatrix(viewProj, translation, rotX, rotY) {
-        let matrix = m4.translate(viewProj, translation[0], translation[1], translation[2])
-        matrix = m4.xRotate(matrix, rotX)
-        return m4.yRotate(matrix, rotY)
-    }
-
-    requestAnimationFrame(render)
 }
 
 function find_actor_coords() {

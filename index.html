@@ -11,25 +11,44 @@
             font-weight: normal;
             font-style: normal;
         }
+
         body {
             background: #008081;
         }
+
         #screen {
             margin: 10px;
             padding: 10px;
             background: #ffffff;
             border: thin inset #aaaaaa;
         }
-        .window{
-            background: #c0c0c0 ;
+        #ui {
+            margin: 10px;
+            padding: 10px;
+            border: thin inset #aaaaaa;
+            background-color: transparent;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            z-index: 10;
         }
-        .bar{
+
+        .window {
+            background: #c0c0c0;
+        }
+
+        .bar {
             background: #000181;
-            font-family: Windows,serif;
+            font-family: Windows, serif;
             color: #ffffff;
             text-align: center;
         }
-        .container {  /*to manage text on canvas and webgl */
+
+        .render_window{
+            position: relative !important;
+        }
+
+        .container {
             height: 100%;
             padding: 0;
             margin: 0;
@@ -40,12 +59,16 @@
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="window">
         <div class="bar">
             WebGL Application
         </div>
-    <canvas width="800" height="600" id="screen"></canvas>
+        <div class="render_window">
+            <canvas width="800" height="600" id="screen"></canvas>
+            <canvas width="800" height="600" id="ui"></canvas>
+        </div>
     </div>
 </div>
 </body>
@@ -79,6 +102,8 @@
     v_normal = mat3(u_world) * a_normal;
     v_texcoord = a_texcoord;
   }
+
+
 </script>
 <!-- fragment shader -->
 <script id="3d-fragment-shader" type="x-shader/x-fragment">
@@ -119,6 +144,8 @@
         specular * pow(specularLight, shininess),
         effectiveOpacity);
   }
+
+
 </script>
 <script type="module" src="main.js"></script>
 </html>

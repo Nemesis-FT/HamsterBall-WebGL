@@ -1,9 +1,18 @@
+import {Engine, render} from "./Engine.js";
+
 export class Scene {
-    constructor(name, objs) {
+    constructor(name, objs, phys) {
         this.name = name;
         this.objs = objs;
+        this.die = false;
+        this.phys = phys === "true" || phys
         console.debug(objs)
+        window.addEventListener('loadlevel', async (e) =>{
+            this.die = true
+        })
     }
+
+
 }
 
 export class SceneLoader {
@@ -13,7 +22,7 @@ export class SceneLoader {
             .then(response => response.json())
             .then(s => {
                 console.debug(s)
-                scene = new Scene(s.name, s.objs)
+                scene = new Scene(s.name, s.objs, s.phys)
             })
         return scene
     }

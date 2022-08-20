@@ -10,7 +10,7 @@ export class PlayerController{
     constructor(object) {
         this.object = object;
         obj = object
-        canvas = document.getElementById("screen");
+        canvas = document.getElementById("ui");
         this.install();
     }
 
@@ -135,7 +135,6 @@ export class PlayerController{
         if(e.keyCode === 68) queue.z.n=false;
     }
 }
-
 function handler(){
     if(queue.x.p){
         obj.accel.x=0.0005
