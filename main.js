@@ -12,4 +12,4 @@ window.addEventListener('loadlevel', async (e) =>{
     en.load_scene(scene).then(r => render(0))
 })
 
-window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "menu.json"}}))
+window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "Menu.json"}}))
