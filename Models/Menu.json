@@ -1,0 +1,30 @@
+{
+  "name": "menu",
+  "phys": false,
+  "objs": [
+    {
+      "alias": "Text",
+      "path": "Models/Text.obj",
+      "player": "false",
+      "active": "false",
+      "collider": "box",
+      "coords": {
+        "x": 0.0,
+        "y": -12.929999351501465,
+        "z": 0.0
+      }
+    },
+    {
+      "alias": "Player2",
+      "path": "Models/Player2.obj",
+      "player": "true",
+      "active": "true",
+      "collider": "box",
+      "coords": {
+        "x": 3.0,
+        "y": 11.05447769165039,
+        "z": -3.0
+      }
+    }
+  ]
+}
