@@ -17,9 +17,9 @@ export class PlayerController{
     install(){
         window.addEventListener("keydown", this.keyDown, true)
         window.addEventListener("keyup", this.keyUp, true)
-        canvas.addEventListener("mousedown", this.mouseDown, true)
-        canvas.addEventListener("mouseup", this.mouseUp, true)
-        canvas.addEventListener("mousemove", this.mouseMove, true)
+        window.addEventListener("mousedown", this.mouseDown, true)
+        window.addEventListener("mouseup", this.mouseUp, true)
+        window.addEventListener("mousemove", this.mouseMove, true)
         window.addEventListener("touchstart", this.mouseDown, true)
         window.addEventListener("touchend", this.mouseUp, true)
         window.addEventListener("touchmove", this.mouseMove)
@@ -105,7 +105,6 @@ export class PlayerController{
     }
 
     mouseDown(e){
-        console.debug(e)
         if(e instanceof TouchEvent){
         old.x = e.changedTouches[0].clientX;
         old.y = e.changedTouches[0].clientY;
@@ -122,10 +121,18 @@ export class PlayerController{
 
 
     keyDown(e){
+        function cancelAllAnimationFrames(){
+            var id = window.requestAnimationFrame(function(){});
+            console.debug(id)
+            while(id--){
+                window.cancelAnimationFrame(id);
+            }
+        }
         if(e.keyCode === 87) queue.x.p=true;
         if(e.keyCode === 83) queue.x.n=true;
-        if(e.keyCode === 65) queue.z.p=true;
-        if(e.keyCode === 68) queue.z.n=true;
+        if(e.keyCode === 65) queue.z.p=true; // a
+        if(e.keyCode === 68) queue.z.n=true; // d
+        if(e.keyCode === 27) {window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "Menu.json"}}))}
     }
 
     keyUp(e){
@@ -148,5 +155,5 @@ function handler(){
     if(queue.z.n){
         obj.accel.z= 0.0005
     }
-    window.requestAnimationFrame(handler)
+        window.requestAnimationFrame(handler)
 }

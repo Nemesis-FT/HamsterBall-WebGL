@@ -1,4 +1,4 @@
-import {Engine, render} from "./Engine.js";
+import {Engine} from "./Engine.js";
 
 export class Scene {
     constructor(name, objs, phys) {
@@ -7,9 +7,7 @@ export class Scene {
         this.die = false;
         this.phys = phys === "true" || phys
         console.debug(objs)
-        window.addEventListener('loadlevel', async (e) =>{
-            this.die = true
-        })
+
     }
 
 

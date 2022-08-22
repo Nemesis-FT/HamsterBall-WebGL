@@ -27,7 +27,7 @@ export class PhysObject {
 
             if (check.coll) {
                 if (check.ramp) {
-                    //this.accel.z = this.speed.z = 0;
+                    this.accel.z = 0.0005
                     this.accel.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -58,9 +58,10 @@ export class PhysObject {
             this.speed.x += this.accel.x;
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
-            this.position.x += this.speed.x;
-            this.position.y += this.speed.y;
-            this.position.z += this.speed.z;
+            let bounds = this.compute_bounds()
+            this.position.x = (bounds.max.x+bounds.min.x)/2;
+            this.position.y = (bounds.max.y+bounds.min.y)/2;
+            this.position.z = (bounds.max.z+bounds.min.z)/2;
             let i = 0;
             while (i < this.mesh.positions.length) {
                 this.mesh.positions[i] += parseFloat(this.speed.z);
@@ -108,10 +109,13 @@ export class PhysObject {
                         }
 
                     }
+                    if(physobjs[obj].collider==="goal"){
+                        window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "menu.json"}}))
+                    }
 
                 }
                 if(physobjs[obj].collider==="death" && target.min.y > res.min.y){
-                    window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: "level1.json"}}))
+                    window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "level1.json"}}))
                 }
             }
         }
@@ -164,22 +168,6 @@ export class PhysObject {
         }
     }
 
-    set_accel(accel) {
-        if (this.isActive) {
-            this.accel = accel;
-        }
-    }
-
-    compute_position(x, y, z) {
-        let i = 0;
-        while (i < this.mesh.positions.length) {
-            this.mesh.positions[i] += parseFloat(x);
-            this.mesh.positions[i + 1] += parseFloat(y);
-            this.mesh.positions[i + 2] += parseFloat(z);
-            i = i + 3;
-        }
-
-    }
 
     render(deltaTime, gl, light, program, tar) {
 
