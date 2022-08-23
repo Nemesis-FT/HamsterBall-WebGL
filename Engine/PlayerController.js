@@ -132,7 +132,9 @@ export class PlayerController{
         if(e.keyCode === 83) queue.x.n=true;
         if(e.keyCode === 65) queue.z.p=true; // a
         if(e.keyCode === 68) queue.z.n=true; // d
-        if(e.keyCode === 27) {window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "Menu.json"}}))}
+        if(e.keyCode === 27) {setTimeout(function(){
+            window.location.reload();
+        })}
     }
 
     keyUp(e){

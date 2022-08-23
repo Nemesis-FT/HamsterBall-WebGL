@@ -5,6 +5,7 @@ export class StartButton extends Button{
         super(text, geometry, canvas, ctx);
         this.levelId = levelId
         this.levels = levels;
+        this.offset = 0
     }
 
 

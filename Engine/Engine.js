@@ -9,7 +9,12 @@ let ui;
 let btn
 let btn1
 let btn2
-let levels = ["level1.json"]
+let levels = ["level1.json", "level2.json"]
+let offset = 0;
+
+function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
 
 export class Engine {
     constructor(id) {
@@ -24,10 +29,18 @@ export class Engine {
         this.canvas = document.getElementById(id);
         this.die = false;
         this.nextlevel = "";
+        this.advance_timer = true;
         window.addEventListener('loadlevel_pre', async (e) =>{
-            console.debug("PRE", e)
             this.die = true
             this.nextlevel = e.detail.scene
+        })
+        window.addEventListener('level_complete', async (e) =>{
+            this.advance_timer = false;
+            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 20}, "Level completed in "+ this.curr_time-this.time_offset+"s.")
+            delay(5000).then(setTimeout(function(){
+                window.location.reload();
+            },1000));
+
         })
         this.gl = this.canvas.getContext("webgl", {antialias: true});
 
@@ -47,6 +60,21 @@ export class Engine {
         this.gl = this.gl
         this.ui = new UI("ui")
         ui = this.ui
+        this.btn = new LevelSelectButton("", {
+            coordinates: {x: this.gl.canvas.width / 2, y: this.gl.canvas.height / 2},
+            width: 500,
+            height: 50
+        }, ui.canvas, ui.ctx, ["Standard Race", "Ramp Race"])
+        this.btn1 = new StartButton("Start", {
+            coordinates: {x: this.gl.canvas.width / 2 - this.btn.geometry.width/4-10, y: this.btn.geometry.height+this.gl.canvas.height / 2+10},
+            width: 230,
+            height: 50
+        }, ui.canvas, ui.ctx, this.btn.idx, levels)
+        this.btn2 = new Button("Disable Advanced Rendering", {
+            coordinates: {x: this.gl.canvas.width / 2 + this.btn.geometry.width/4+10, y: this.btn.geometry.height+this.gl.canvas.height / 2+10},
+            width: 230,
+            height: 50
+        }, ui.canvas, ui.ctx)
     }
 
     async load_scene(scene) {
@@ -57,44 +85,24 @@ export class Engine {
             await this.loader.load(obj.path, this.gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
         }
         console.debug(" Scene loaded.")
-
-        this.meshlist = this.meshlist;
     }
 
     render = (time = 0) => {
-        //console.debug(this.code, this.meshlist)
-        if(this.curr_time===0){
-            this.time_offset = time;
-        }
-        this.curr_time = time;
+        console.debug(time, this.curr_time, offset)
+
         if(time === 0){
-            btn = new LevelSelectButton("", {
-                coordinates: {x: this.gl.canvas.width / 2, y: this.gl.canvas.height / 2},
-                width: 500,
-                height: 50
-            }, ui.canvas, ui.ctx, ["Beginner Race", "Medium Race"])
-            btn1 = new StartButton("Start", {
-                coordinates: {x: this.gl.canvas.width / 2 - btn.geometry.width/4-10, y: btn.geometry.height+this.gl.canvas.height / 2+10},
-                width: 230,
-                height: 50
-            }, ui.canvas, ui.ctx, btn.idx, levels)
-            btn2 = new Button("Disable Advanced Rendering", {
-                coordinates: {x: this.gl.canvas.width / 2 + btn.geometry.width/4+10, y: btn.geometry.height+this.gl.canvas.height / 2+10},
-                width: 230,
-                height: 50
-            }, ui.canvas, ui.ctx)
             if(this.scene_curr.name!=="menu"){
-                btn.disable()
-                btn1.disable()
-                btn2.disable()
+                this.btn.disable()
+                this.btn1.disable()
+                this.btn2.disable()
             }
             else{
-                btn.enable()
-                btn1.enable()
-                btn2.enable()
+                this.btn.enable()
+                this.btn1.enable()
+                this.btn2.enable()
             }
         }
-        btn2.levelId = btn.idx;
+        this.btn1.levelId = this.btn.idx;
         let program = webglUtils.createProgramFromScripts(this.gl, ["3d-vertex-shader", "3d-fragment-shader"])
         this.gl.useProgram(program);
         if (this.scene_curr.phys && !this.die) {
@@ -104,22 +112,31 @@ export class Engine {
         }
         this.delta = time - this.curr_time;
         let camera_coords = this.find_actor_coords()
-        this.meshlist.forEach(elem => {
-            elem.render(this.delta, this.gl, {
-                ambientLight: [0.2, 0.2, 0.2],
-                colorLight: [1.0, 1.0, 1.0]
-            }, program, camera_coords);
-        })
+        if(!this.die) {
+            this.meshlist.forEach(elem => {
+                elem.render(this.delta, this.gl, {
+                    ambientLight: [0.2, 0.2, 0.2],
+                    colorLight: [1.0, 1.0, 1.0]
+                }, program, camera_coords);
+            })
+        }
         if (this.scene_curr.name !== "menu") {
+
+            if(this.advance_timer) {
+                this.curr_time = time-offset;
+            }
             ui.clear()
             ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 20}, this.scene_curr.name)
-            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((time-this.time_offset) / 1000).toFixed(3))
+            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((this.curr_time) / 1000).toFixed(3))
+            if(!this.advance_timer){
+                ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
+            }
         } else {
             ui.clear()
-            btn.draw()
-            btn1.draw()
-            btn2.draw()
-            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((time-this.time_offset) / 1000).toFixed(3))
+            this.btn.draw()
+            this.btn1.draw()
+            this.btn2.draw()
+            offset = time
             ui.draw('14pt Calibri', "black", {
                 x: this.gl.canvas.width / 2,
                 y: this.gl.canvas.height /2 -30
@@ -138,10 +155,13 @@ export class Engine {
             }, "This is not a commercial product. The hamsterball trademark is property of Raptisoft.")
         }
         if (!this.die) {
-            requestAnimationFrame(this.render)
+            this.animId = window.requestAnimationFrame(this.render)
         } else {
             console.debug("Killing engine...")
             window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: this.nextlevel}}))
+            this.meshlist = []
+            this.curr_time = -1
+            window.cancelAnimationFrame(this.animId)
         }
 
     }
@@ -159,6 +179,9 @@ export class Engine {
 
     find_actor_coords() {
         let actor = this.find_actor()
+        if(!actor){
+            return [0,0,0]
+        }
         if(this.scene_curr.name !=="menu"){
             return [actor.mesh.positions[0], actor.mesh.positions[1], actor.mesh.positions[2]]
         }

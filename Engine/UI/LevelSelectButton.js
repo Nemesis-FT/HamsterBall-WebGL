@@ -10,9 +10,9 @@ export class LevelSelectButton extends Button{
 
     handle = e =>{
         if(super.collision(super.normalize(e))){
+            this.idx++;
             if(this.idx<this.levelList.length){
                 this.text = this.levelList[this.idx];
-                this.idx++;
             }
             else{
                 this.idx = 0;

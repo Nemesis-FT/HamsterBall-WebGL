@@ -22,6 +22,7 @@ export class SceneLoader {
                 console.debug(s)
                 scene = new Scene(s.name, s.objs, s.phys)
             })
+        console.debug(scene)
         return scene
     }
 }

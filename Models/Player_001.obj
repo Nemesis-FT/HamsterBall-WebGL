@@ -1,7 +1,7 @@
 # Blender v3.1.2 OBJ File: 'Levels.blend'
 # www.blender.org
-mtllib Player.mtl
-o Player_Icosphere
+mtllib Player_001.mtl
+o Player.001_Icosphere.001
 v 0.000000 -1.000000 13.000000
 v 0.723607 -0.447220 13.525725
 v -0.276388 -0.447220 13.850649

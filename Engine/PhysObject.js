@@ -10,6 +10,7 @@ export class PhysObject {
         this.positions = this.mesh.positions
         this.isPlayer = isPlayer === "true";
         this.collider = collider
+        this.level_over = false;
         if(!this.isActive)
             this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
@@ -17,7 +18,6 @@ export class PhysObject {
         }
         this.rotationRads = {x:0, y:0}
         //this.compute_position()
-        console.debug(this)
     }
 
     compute_phys(physobjs) {
@@ -36,7 +36,7 @@ export class PhysObject {
                 if (check.data.y.bottom && this.accel.y <= 0) {
                     this.accel.y = this.speed.y = 0
                 }
-                let attrition = 0.0001;
+                let attrition = 0.00004;
                 if (this.accel.x < -attrition && check.coll) {
                     this.accel.x += attrition;
                 } else if (this.accel.x > attrition) {
@@ -86,19 +86,22 @@ export class PhysObject {
             else{
                 target = physobjs[obj].boundingBox;
             }
-            if (physobjs[obj].alias !== this.alias) {
+            if (physobjs[obj].alias !== this.alias && this.isActive) {
                 if ((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
                     (res.min.z <= target.max.z && res.max.z >= target.min.z) && physobjs[obj].collider!=="skybox" && physobjs[obj].collider!=="death") {
                     colliders.push(physobjs[obj])
                     coll = true;
                     if (physobjs[obj].collider === "ramp") {
+
                         let angular = (target.max.y - target.min.y) / (target.min.z - target.max.z )
                         let y_in_point = angular * res.min.z + target.max.y+0.5;
+                        console.debug(angular, y_in_point, res.min.y, target.min.y)
                         if(res.min.y<=y_in_point){
+                            console.debug("HI")
                             let i = 0
                             while (i < this.mesh.positions.length) {
-                                this.mesh.positions[i + 2] += parseFloat(y_in_point-res.min.y);
+                                this.mesh.positions[i + 2] += y_in_point-res.min.y;
                                 i = i + 3;
                             }
                             ramp = true;
@@ -110,7 +113,10 @@ export class PhysObject {
 
                     }
                     if(physobjs[obj].collider==="goal"){
-                        window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "menu.json"}}))
+                        if(physobjs[obj].boundingBox.max.y<this.position.y && !this.level_over){
+                            this.level_over = true;
+                            window.dispatchEvent(new CustomEvent('level_complete'))
+                        }
                     }
 
                 }
