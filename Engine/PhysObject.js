@@ -11,6 +11,10 @@ export class PhysObject {
         this.isPlayer = isPlayer === "true";
         this.collider = collider
         this.level_over = false;
+        this.mirror = alias === "Mirror";
+        if(this.mirror){
+            console.debug("MIRROR")
+        }
         if(!this.isActive)
             this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
@@ -175,7 +179,7 @@ export class PhysObject {
     }
 
 
-    render(deltaTime, gl, light, program, tar) {
+    render(deltaTime, gl, light, program, tar, mirrorText, camera_override=null) {
 
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
@@ -223,7 +227,14 @@ export class PhysObject {
         let up = [0, 0, 1];
 
         // Compute the camera's matrix using look at.
-        let cameraMatrix = m4.lookAt(cameraPosition, tar, up);
+        let cameraMatrix = null;
+        if(camera_override){
+            console.debug(tar)
+            cameraMatrix= m4.lookAt([1, 3.5, 11], [0,-1,10], up);
+        }
+        else{
+            cameraMatrix= m4.lookAt(cameraPosition, tar, up);
+        }
 
         // Make a view matrix from the camera matrix.
         let viewMatrix = m4.inverse(cameraMatrix);
@@ -260,12 +271,17 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(deltaTime, this.mesh)
+        drawScene(deltaTime, this.mesh, this.mirror, mirrorText)
 
 
         // Draw the scene.
-        function drawScene(deltaTime, mesh) {
-            gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+        function drawScene(deltaTime, mesh, mirror, mirrorText) {
+            if(mirror){
+                gl.bindTexture(gl.TEXTURE_2D, mirrorText);
+            }
+            else{
+                gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+            }
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.enable(gl.DEPTH_TEST);
 
