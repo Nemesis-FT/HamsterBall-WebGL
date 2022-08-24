@@ -12,9 +12,6 @@ export class PhysObject {
         this.collider = collider
         this.level_over = false;
         this.mirror = alias === "Mirror";
-        if(this.mirror){
-            console.debug("MIRROR")
-        }
         if(!this.isActive)
             this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
@@ -100,9 +97,7 @@ export class PhysObject {
 
                         let angular = (target.max.y - target.min.y) / (target.min.z - target.max.z )
                         let y_in_point = angular * res.min.z + target.max.y+0.5;
-                        console.debug(angular, y_in_point, res.min.y, target.min.y)
                         if(res.min.y<=y_in_point){
-                            console.debug("HI")
                             let i = 0
                             while (i < this.mesh.positions.length) {
                                 this.mesh.positions[i + 2] += y_in_point-res.min.y;

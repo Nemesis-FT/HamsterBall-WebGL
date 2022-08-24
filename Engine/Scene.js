@@ -6,7 +6,6 @@ export class Scene {
         this.objs = objs;
         this.die = false;
         this.phys = phys === "true" || phys
-        console.debug(objs)
 
     }
 
@@ -19,10 +18,8 @@ export class SceneLoader {
         await fetch(path)
             .then(response => response.json())
             .then(s => {
-                console.debug(s)
                 scene = new Scene(s.name, s.objs, s.phys)
             })
-        console.debug(scene)
         return scene
     }
 }

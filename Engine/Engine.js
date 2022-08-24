@@ -3,6 +3,7 @@ import {UI} from "./UI/UI.js"
 import {Button} from "./UI/Button.js"
 import {LevelSelectButton} from "./UI/LevelSelectButton.js";
 import {StartButton} from "./UI/StartButton.js";
+import {MirrorButton} from "./UI/MirrorButton.js";
 
 
 let ui;
@@ -59,6 +60,7 @@ export class Engine {
         this.gl = this.canvas.getContext("webgl", {antialias: true});
         this.mirror_canvas = document.getElementById("mirror")
         this.mirror_gl = this.mirror_canvas.getContext("webgl", {preserveDrawingBuffer: true})
+        this.mirror_enabled = false;
 
         if (!this.gl) {
             alert("This browser does not support opengl acceleration.")
@@ -82,14 +84,14 @@ export class Engine {
             width: 230,
             height: 50
         }, ui.canvas, ui.ctx, this.btn.idx, levels)
-        this.btn2 = new Button("Disable Advanced Rendering", {
+        this.btn2 = new MirrorButton({
             coordinates: {
                 x: this.gl.canvas.width / 2 + this.btn.geometry.width / 4 + 10,
                 y: this.btn.geometry.height + this.gl.canvas.height / 2 + 10
             },
             width: 230,
             height: 50
-        }, ui.canvas, ui.ctx)
+        }, ui.canvas, ui.ctx, "Mirrors OFF", "Mirrors ON")
     }
 
     async generate_reflection() {
@@ -147,6 +149,7 @@ export class Engine {
         }
         console.debug(" Scene loaded.")
     }
+
     render = async (time = 0) => {
         //this.generate_reflection()
         if (time === 0) {
@@ -161,6 +164,7 @@ export class Engine {
             }
         }
         this.btn1.levelId = this.btn.idx;
+
         let program = webglUtils.createProgramFromScripts(this.gl, ["3d-vertex-shader", "3d-fragment-shader"])
         let program2 = webglUtils.createProgramFromScripts(this.mirror_gl, ["3d-vertex-shader", "3d-fragment-shader"])
         let flag = false
@@ -169,15 +173,17 @@ export class Engine {
         let camera_coords = this.find_actor_coords()
         if (!this.die) {
             this.gl.useProgram(program);
-            let reflection
-            reflection = await this.generate_reflection()
-            this.mirror_gl.useProgram(program2);
-            await this.meshlist.forEach(elem => {
-                elem.render(this.delta, this.mirror_gl, {
-                    ambientLight: [0.2, 0.2, 0.2],
-                    colorLight: [1.0, 1.0, 1.0]
-                }, program2, camera_coords, null, 1, true);
-            })
+            let reflection = null
+            if (this.mirror_enabled) {
+                reflection = await this.generate_reflection()
+                this.mirror_gl.useProgram(program2);
+                await this.meshlist.forEach(elem => {
+                    elem.render(this.delta, this.mirror_gl, {
+                        ambientLight: [0.2, 0.2, 0.2],
+                        colorLight: [1.0, 1.0, 1.0]
+                    }, program2, camera_coords, null, 1, true);
+                })
+            }
             await this.meshlist.forEach(elem => {
                 elem.render(this.delta, this.gl, {
                     ambientLight: [0.2, 0.2, 0.2],
@@ -188,12 +194,12 @@ export class Engine {
         }
         let actor = this.find_actor()
         actor.pc.handler()
-        if (this.scene_curr.phys && !this.die && time-last_update>17) {
+        if (this.scene_curr.phys && !this.die && time - last_update > 17) {
             actor.compute_phys(this.meshlist)
             last_update = time
         }
         if (this.scene_curr.name !== "menu") {
-
+            this.mirror_enabled = localStorage.getItem("mirrors")==="true"
             if (this.advance_timer) {
                 this.curr_time = time - offset;
             }
@@ -204,6 +210,13 @@ export class Engine {
                 ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
             }
         } else {
+            this.mirror_enabled = this.btn2.value;
+            if(this.mirror_enabled){
+                localStorage.setItem("mirrors","true")
+            }
+            else{
+                localStorage.setItem("mirrors","false")
+            }
             ui.clear()
             this.btn.draw()
             this.btn1.draw()

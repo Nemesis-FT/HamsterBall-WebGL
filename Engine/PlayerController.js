@@ -32,7 +32,6 @@ export class PlayerController{
     }
 
     enableGyro(){
-        console.log("Hi")
         if(window.DeviceMotionEvent)
             window.addEventListener("devicemotion", this.gyro, true)
         else alert("Motion sensors not available on device.")
@@ -44,7 +43,6 @@ export class PlayerController{
 
     gyro(e){
         alert()
-        console.debug(e.acceleration.x, e.acceleration.y)
         if(e.acceleration.x>0){
             queue.x.p=true;
         }
@@ -80,7 +78,6 @@ export class PlayerController{
                     queue.z.n = true;
                 }
                 else queue.z.p = queue.z.n = false
-                console.debug(old.x, old.y, e.clientX, e.clientY)
                 old.x = e.clientX;
                 old.y = e.clientY;
             }

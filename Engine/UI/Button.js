@@ -37,7 +37,6 @@ export class Button {
         }
         mx = e.pageX - offsetX;
         my = e.pageY - offsetY;
-        console.debug(this.geometry.coordinates, {x: mx, y: my})
         return {x: mx, y: my};
     }
 
