@@ -179,7 +179,7 @@ export class PhysObject {
     }
 
 
-    render(deltaTime, gl, light, program, tar, mirrorText, camera_override=null) {
+    render(deltaTime, gl, light, program, tar, mirrorText, camera_override=null, mirror_mode=false) {
 
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
@@ -229,7 +229,6 @@ export class PhysObject {
         // Compute the camera's matrix using look at.
         let cameraMatrix = null;
         if(camera_override){
-            console.debug(tar)
             cameraMatrix= m4.lookAt([1, 3.5, 11], [0,-1,10], up);
         }
         else{
@@ -271,7 +270,7 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(deltaTime, this.mesh, this.mirror, mirrorText)
+        drawScene(deltaTime, this.mesh, this.mirror, mirrorText, mirror_mode)
 
 
         // Draw the scene.
@@ -280,7 +279,13 @@ export class PhysObject {
                 gl.bindTexture(gl.TEXTURE_2D, mirrorText);
             }
             else{
-                gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+                if(!mirror_mode){
+                    gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+                }
+                else{
+                    gl.bindTexture(gl.TEXTURE_2D, mesh.texture_mirror);
+                }
+
             }
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.enable(gl.DEPTH_TEST);

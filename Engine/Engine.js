@@ -11,6 +11,8 @@ let btn1
 let btn2
 let levels = ["level1.json", "level2.json"]
 let offset = 0;
+let last_update = 0;
+let old_reflection = null;
 
 function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
@@ -93,7 +95,7 @@ export class Engine {
     async generate_reflection() {
         let pixels = new Uint8Array(this.mirror_gl.drawingBufferWidth * this.mirror_gl.drawingBufferHeight * 4);
         this.mirror_gl.readPixels(0, 0, this.mirror_gl.drawingBufferWidth, this.mirror_gl.drawingBufferHeight, this.mirror_gl.RGBA, this.mirror_gl.UNSIGNED_BYTE, pixels);
-        this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
+
 
         let canvas = document.getElementById("2d")
         let context = canvas.getContext("2d")
@@ -128,7 +130,7 @@ export class Engine {
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
         }
-
+        this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
         return texture;
 
         function isPowerOf2(value) {
@@ -141,11 +143,10 @@ export class Engine {
         this.scene_curr = scene;
         console.debug(" Loading scene...")
         for (const obj of scene.objs) {
-            await this.loader.load(obj.path, this.gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
+            await this.loader.load(obj.path, this.gl, this.mirror_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
         }
         console.debug(" Scene loaded.")
     }
-
     render = async (time = 0) => {
         //this.generate_reflection()
         if (time === 0) {
@@ -162,30 +163,34 @@ export class Engine {
         this.btn1.levelId = this.btn.idx;
         let program = webglUtils.createProgramFromScripts(this.gl, ["3d-vertex-shader", "3d-fragment-shader"])
         let program2 = webglUtils.createProgramFromScripts(this.mirror_gl, ["3d-vertex-shader", "3d-fragment-shader"])
+        let flag = false
 
-        if (this.scene_curr.phys && !this.die) {
-            await this.meshlist.forEach(elem => {
-                elem.compute_phys(this.meshlist)
-            })
-        }
         this.delta = time - this.curr_time;
         let camera_coords = this.find_actor_coords()
         if (!this.die) {
             this.gl.useProgram(program);
-            let reflection = await this.generate_reflection()
+            let reflection
+            reflection = await this.generate_reflection()
+            this.mirror_gl.useProgram(program2);
+            await this.meshlist.forEach(elem => {
+                elem.render(this.delta, this.mirror_gl, {
+                    ambientLight: [0.2, 0.2, 0.2],
+                    colorLight: [1.0, 1.0, 1.0]
+                }, program2, camera_coords, null, 1, true);
+            })
             await this.meshlist.forEach(elem => {
                 elem.render(this.delta, this.gl, {
                     ambientLight: [0.2, 0.2, 0.2],
                     colorLight: [1.0, 1.0, 1.0]
                 }, program, camera_coords, reflection);
             })
-            this.mirror_gl.useProgram(program2);
-            await this.meshlist.forEach(elem => {
-                elem.render(this.delta, this.mirror_gl, {
-                    ambientLight: [0.2, 0.2, 0.2],
-                    colorLight: [1.0, 1.0, 1.0]
-                }, program2, camera_coords, reflection, 1);
-            })
+
+        }
+        let actor = this.find_actor()
+        actor.pc.handler()
+        if (this.scene_curr.phys && !this.die && time-last_update>17) {
+            actor.compute_phys(this.meshlist)
+            last_update = time
         }
         if (this.scene_curr.name !== "menu") {
 
