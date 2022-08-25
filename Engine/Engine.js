@@ -14,6 +14,8 @@ let levels = ["level1.json", "level2.json"]
 let offset = 0;
 let last_update = 0;
 let old_reflection = null;
+let old_image = null;
+let flag
 
 function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
@@ -121,17 +123,20 @@ export class Engine {
         this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat,
             width, height, border, srcFormat, srcType, pixel);
 
+
         this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
-        if (isPowerOf2(canvas.width) && isPowerOf2(canvas.height))
-            this.gl.generateMipmap(this.gl.TEXTURE_2D); // Yes, it's a power of 2. Generate mips.
-        else {
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+        if(this.gl.getError()!==0){
+            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, old_image);
         }
+        else{
+            old_image = image
+        }
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
         this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
         return texture;
 
@@ -175,7 +180,14 @@ export class Engine {
             this.gl.useProgram(program);
             let reflection = null
             if (this.mirror_enabled) {
-                reflection = await this.generate_reflection()
+                if(!flag){
+                    reflection = await this.generate_reflection()
+                    old_reflection = reflection
+                }
+                else{
+                    reflection = old_reflection
+                    flag = false;
+                }
                 this.mirror_gl.useProgram(program2);
                 await this.meshlist.forEach(elem => {
                     elem.render(this.delta, this.mirror_gl, {
@@ -194,7 +206,7 @@ export class Engine {
         }
         let actor = this.find_actor()
         actor.pc.handler()
-        if (this.scene_curr.phys && !this.die && time - last_update > 17) {
+        if (this.scene_curr.phys && !this.die && time - last_update > 33) {
             actor.compute_phys(this.meshlist)
             last_update = time
         }
