@@ -50,10 +50,22 @@ export class Engine {
         })
         window.addEventListener('level_complete', async (e) => {
             this.advance_timer = false;
+            let time = this.curr_time - this.time_offset
+            if (time === 0) {
+                return;
+            }
             ui.draw('18pt Calibri', "black", {
                 x: this.gl.canvas.width / 2,
                 y: 20
-            }, "Level completed in " + this.curr_time - this.time_offset + "s.")
+            }, "Level completed in " + time + "s.")
+            let s = localStorage.getItem("level")
+            let best = localStorage.getItem(s);
+            if (!best) {
+                localStorage.setItem(s, "" + time)
+            } else if (time < best) {
+                localStorage.setItem(s, "" + time)
+                console.debug(localStorage.getItem(s))
+            }
             delay(5000).then(setTimeout(function () {
                 window.location.reload();
             }, 1000));
@@ -97,6 +109,17 @@ export class Engine {
     }
 
     async generate_reflection() {
+
+        function addImageProcess(src){
+            return new Promise((resolve, reject) => {
+                let img = new Image()
+                img.onerror = reject
+                img.src = src
+                img.onload = () => resolve(img)
+            })
+        }
+
+        if (this.scene_curr.name === "menu") return this.gl.createTexture();
         let pixels = new Uint8Array(this.mirror_gl.drawingBufferWidth * this.mirror_gl.drawingBufferHeight * 4);
         this.mirror_gl.readPixels(0, 0, this.mirror_gl.drawingBufferWidth, this.mirror_gl.drawingBufferHeight, this.mirror_gl.RGBA, this.mirror_gl.UNSIGNED_BYTE, pixels);
 
@@ -107,8 +130,8 @@ export class Engine {
         idata.data.set(pixels)
         context.putImageData(idata, 0, 0)
         var dataUri = canvas.toDataURL();
-        var image = new Image();
-        image.src = dataUri;
+        let image = await addImageProcess(dataUri)
+
 
         const texture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
@@ -123,21 +146,25 @@ export class Engine {
         this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat,
             width, height, border, srcFormat, srcType, pixel);
 
+        try {
+            this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+            if (this.gl.getError() !== 0) {
+                console.debug(image)
+                this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, old_image);
+            } else {
+                old_image = image
+            }
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+            this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
+        }
+        catch (e){
 
-        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
-        if(this.gl.getError()!==0){
-            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, old_image);
         }
-        else{
-            old_image = image
-        }
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-        this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
         return texture;
 
         function isPowerOf2(value) {
@@ -180,11 +207,10 @@ export class Engine {
             this.gl.useProgram(program);
             let reflection = null
             if (this.mirror_enabled) {
-                if(!flag){
+                if (!flag) {
                     reflection = await this.generate_reflection()
                     old_reflection = reflection
-                }
-                else{
+                } else {
                     reflection = old_reflection
                     flag = false;
                 }
@@ -206,12 +232,12 @@ export class Engine {
         }
         let actor = this.find_actor()
         actor.pc.handler()
-        if (this.scene_curr.phys && !this.die && time - last_update > 33) {
+        if (this.scene_curr.phys && !this.die && time - last_update > 16) {
             actor.compute_phys(this.meshlist)
             last_update = time
         }
         if (this.scene_curr.name !== "menu") {
-            this.mirror_enabled = localStorage.getItem("mirrors")==="true"
+            this.mirror_enabled = localStorage.getItem("mirrors") === "true"
             if (this.advance_timer) {
                 this.curr_time = time - offset;
             }
@@ -222,12 +248,12 @@ export class Engine {
                 ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
             }
         } else {
+            localStorage.setItem("level", levels[this.btn1.levelId])
             this.mirror_enabled = this.btn2.value;
-            if(this.mirror_enabled){
-                localStorage.setItem("mirrors","true")
-            }
-            else{
-                localStorage.setItem("mirrors","false")
+            if (this.mirror_enabled) {
+                localStorage.setItem("mirrors", "true")
+            } else {
+                localStorage.setItem("mirrors", "false")
             }
             ui.clear()
             this.btn.draw()
@@ -238,6 +264,14 @@ export class Engine {
                 x: this.gl.canvas.width / 2,
                 y: this.gl.canvas.height / 2 - 30
             }, "Click on the button below to choose a level, then click on start.")
+            let best = localStorage.getItem(levels[this.btn1.levelId])
+            if (best) {
+                ui.draw('14pt Calibri', "black", {
+                    x: this.gl.canvas.width / 2,
+                    y: this.gl.canvas.height / 2 + 120
+                }, "Your best time is " + (best / 1000).toFixed(3) + "s")
+            }
+
             ui.draw('14pt Calibri', "black", {
                 x: this.gl.canvas.width / 2,
                 y: this.gl.canvas.height - 30
@@ -255,6 +289,7 @@ export class Engine {
             this.animId = window.requestAnimationFrame(this.render)
         } else {
             console.debug("Killing engine...")
+
             window.dispatchEvent(new CustomEvent('loadlevel', {detail: {scene: this.nextlevel}}))
             this.meshlist = []
             this.curr_time = -1

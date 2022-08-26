@@ -120,7 +120,8 @@ export class PhysObject {
 
                 }
                 if(physobjs[obj].collider==="death" && target.min.y > res.min.y){
-                    window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "level1.json"}}))
+                    let scene = localStorage.getItem("level")
+                    window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: scene}}))
                 }
             }
         }
