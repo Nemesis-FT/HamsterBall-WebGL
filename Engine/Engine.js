@@ -105,7 +105,7 @@ export class Engine {
             },
             width: 230,
             height: 50
-        }, ui.canvas, ui.ctx, "Mirrors OFF", "Mirrors ON")
+        }, ui.canvas, ui.ctx, "Screens OFF", "Screens ON")
     }
 
     async generate_reflection() {
@@ -119,6 +119,19 @@ export class Engine {
             })
         }
 
+        function flipImage(image, ctx, flipH, flipV) {
+            var scaleH = flipH ? -1 : 1, // Set horizontal scale to -1 if flip horizontal
+                scaleV = flipV ? -1 : 1, // Set verical scale to -1 if flip vertical
+                posX = flipH ? ctx.canvas.width * -1 : 0, // Set x position to -100% if flip horizontal
+                posY = flipV ? ctx.canvas.height * -1 : 0; // Set y position to -100% if flip vertical
+
+            ctx.save(); // Save the current state
+            ctx.scale(scaleH, scaleV); // Set scale to flip the image
+
+            ctx.drawImage(image, posX, posY, ctx.canvas.width, ctx.canvas.height); // draw the image
+            ctx.restore(); // Restore the last saved state
+        };
+
         if (this.scene_curr.name === "menu") return this.gl.createTexture();
         let pixels = new Uint8Array(this.mirror_gl.drawingBufferWidth * this.mirror_gl.drawingBufferHeight * 4);
         this.mirror_gl.readPixels(0, 0, this.mirror_gl.drawingBufferWidth, this.mirror_gl.drawingBufferHeight, this.mirror_gl.RGBA, this.mirror_gl.UNSIGNED_BYTE, pixels);
@@ -126,10 +139,16 @@ export class Engine {
 
         let canvas = document.getElementById("2d")
         let context = canvas.getContext("2d")
+        context.fillRect(0,0, context.canvas.width, context.canvas.height)
+        context.scale(-1, 1);
         var idata = context.createImageData(canvas.width, canvas.height);
         idata.data.set(pixels)
         context.putImageData(idata, 0, 0)
-        var dataUri = canvas.toDataURL();
+
+        //var dataUri_pre = canvas.toDataURL();
+        //let image_pre = await addImageProcess(dataUri_pre)
+        //flipImage(image_pre, context, 1, 0)
+        let dataUri = canvas.toDataURL();
         let image = await addImageProcess(dataUri)
 
 
@@ -223,6 +242,9 @@ export class Engine {
                 })
             }
             await this.meshlist.forEach(elem => {
+                if(elem.mirror && !this.mirror_enabled){
+                    return;
+                }
                 elem.render(this.delta, this.gl, {
                     ambientLight: [0.2, 0.2, 0.2],
                     colorLight: [1.0, 1.0, 1.0]

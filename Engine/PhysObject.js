@@ -225,7 +225,7 @@ export class PhysObject {
         // Compute the camera's matrix using look at.
         let cameraMatrix = null;
         if(camera_override){
-            cameraMatrix= m4.lookAt([1, 3.5, 11], [0,-1,10], up);
+            cameraMatrix= m4.lookAt([1, 3.5, 11], tar, up);
         }
         else{
             cameraMatrix= m4.lookAt(cameraPosition, tar, up);
