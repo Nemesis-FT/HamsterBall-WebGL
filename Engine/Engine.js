@@ -47,6 +47,10 @@ export class Engine {
         window.addEventListener('loadlevel_pre', async (e) => {
             this.die = true
             this.nextlevel = e.detail.scene
+            ui.draw('14pt Calibri', "black", {
+                x: this.gl.canvas.width / 2,
+                y: this.gl.canvas.height / 2 + 150
+            }, "Now loading level...")
         })
         window.addEventListener('level_complete', async (e) => {
             this.advance_timer = false;
