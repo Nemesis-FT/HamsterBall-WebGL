@@ -3,7 +3,7 @@ import {UI} from "./UI/UI.js"
 import {Button} from "./UI/Button.js"
 import {LevelSelectButton} from "./UI/LevelSelectButton.js";
 import {StartButton} from "./UI/StartButton.js";
-import {MirrorButton} from "./UI/MirrorButton.js";
+import {ScreenButton} from "./UI/ScreenButton.js";
 
 
 let ui;
@@ -98,7 +98,7 @@ export class Engine {
             width: 230,
             height: 50
         }, ui.canvas, ui.ctx, this.btn.idx, levels)
-        this.btn2 = new MirrorButton({
+        this.btn2 = new ScreenButton({
             coordinates: {
                 x: this.gl.canvas.width / 2 + this.btn.geometry.width / 4 + 10,
                 y: this.btn.geometry.height + this.gl.canvas.height / 2 + 10
@@ -196,7 +196,7 @@ export class Engine {
         this.scene_curr = scene;
         console.debug(" Loading scene...")
         for (const obj of scene.objs) {
-            await this.loader.load(obj.path, this.gl, this.mirror_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider)
+            await this.loader.load(obj.path, this.gl, this.mirror_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider, obj.screen)
         }
         console.debug(" Scene loaded.")
     }
@@ -226,19 +226,14 @@ export class Engine {
             this.gl.useProgram(program);
             let reflection = null
             if (this.mirror_enabled) {
-                if (!flag) {
-                    reflection = await this.generate_reflection()
-                    old_reflection = reflection
-                } else {
-                    reflection = old_reflection
-                    flag = false;
-                }
+                let screens = this.find_screens()
+                reflection = await this.generate_reflection()
                 this.mirror_gl.useProgram(program2);
                 await this.meshlist.forEach(elem => {
                     elem.render(this.delta, this.mirror_gl, {
                         ambientLight: [0.2, 0.2, 0.2],
                         colorLight: [1.0, 1.0, 1.0]
-                    }, program2, camera_coords, null, 1, true);
+                    }, program2, camera_coords, null, (screens ? screens[0]:{position:{x:1,z:3.5,y:-11}}), true);
                 })
             }
             await this.meshlist.forEach(elem => {
@@ -329,6 +324,16 @@ export class Engine {
             }
         }
         return actor;
+    }
+
+    find_screens(){
+        let screens = [];
+        for (let i = 0; i < this.meshlist.length; i++) {
+            if (this.meshlist[i].screen) {
+                screens.push(this.meshlist[i])
+            }
+        }
+        return screens;
     }
 
     find_actor_coords() {

@@ -1,6 +1,6 @@
 import {Button} from "./Button.js";
 
-export class MirrorButton extends Button{
+export class ScreenButton extends Button{
     constructor(geometry, canvas, ctx, textOff, textOn) {
         super(textOff, geometry, canvas, ctx);
         this.textOn=textOn

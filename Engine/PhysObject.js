@@ -1,6 +1,6 @@
 import {PlayerController} from "./PlayerController.js";
 export class PhysObject {
-    constructor(mesh, alias, isActive, isPlayer, offsets, collider) {
+    constructor(mesh, alias, isActive, isPlayer, offsets, collider, screen) {
         this.mesh = mesh;
         this.alias = alias;
         this.isActive = isActive === "true";
@@ -11,7 +11,7 @@ export class PhysObject {
         this.isPlayer = isPlayer === "true";
         this.collider = collider
         this.level_over = false;
-        this.mirror = alias === "Mirror";
+        this.screen = screen === "true";
         if(!this.isActive)
             this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
@@ -225,7 +225,9 @@ export class PhysObject {
         // Compute the camera's matrix using look at.
         let cameraMatrix = null;
         if(camera_override){
-            cameraMatrix= m4.lookAt([1, 3.5, 11], tar, up);
+            console.debug(camera_override.position, tar)
+            cameraMatrix= m4.lookAt([camera_override.position.x, camera_override.position.z, camera_override.position.y*-1], tar, up);
+            //cameraMatrix= m4.lookAt([1, 3.5, 11], tar, up);
         }
         else{
             cameraMatrix= m4.lookAt(cameraPosition, tar, up);
@@ -266,7 +268,7 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(deltaTime, this.mesh, this.mirror, mirrorText, mirror_mode)
+        drawScene(deltaTime, this.mesh, this.screen, mirrorText, mirror_mode)
 
 
         // Draw the scene.
