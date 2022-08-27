@@ -1,6 +1,6 @@
 import {PlayerController} from "./PlayerController.js";
 export class PhysObject {
-    constructor(mesh, alias, isActive, isPlayer, offsets, collider) {
+    constructor(mesh, alias, isActive, isPlayer, offsets, collider, screen) {
         this.mesh = mesh;
         this.alias = alias;
         this.isActive = isActive === "true";
@@ -11,6 +11,7 @@ export class PhysObject {
         this.isPlayer = isPlayer === "true";
         this.collider = collider
         this.level_over = false;
+        this.screen = screen === "true";
         if(!this.isActive)
             this.boundingBox = this.compute_bounds()
         if (this.isPlayer) {
@@ -96,9 +97,7 @@ export class PhysObject {
 
                         let angular = (target.max.y - target.min.y) / (target.min.z - target.max.z )
                         let y_in_point = angular * res.min.z + target.max.y+0.5;
-                        console.debug(angular, y_in_point, res.min.y, target.min.y)
                         if(res.min.y<=y_in_point){
-                            console.debug("HI")
                             let i = 0
                             while (i < this.mesh.positions.length) {
                                 this.mesh.positions[i + 2] += y_in_point-res.min.y;
@@ -121,7 +120,8 @@ export class PhysObject {
 
                 }
                 if(physobjs[obj].collider==="death" && target.min.y > res.min.y){
-                    window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: "level1.json"}}))
+                    let scene = localStorage.getItem("level")
+                    window.dispatchEvent(new CustomEvent('loadlevel_pre', { detail:{scene: scene}}))
                 }
             }
         }
@@ -175,7 +175,7 @@ export class PhysObject {
     }
 
 
-    render(deltaTime, gl, light, program, tar) {
+    render(deltaTime, gl, light, program, tar, mirrorText, camera_override=null, mirror_mode=false) {
 
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
@@ -223,7 +223,15 @@ export class PhysObject {
         let up = [0, 0, 1];
 
         // Compute the camera's matrix using look at.
-        let cameraMatrix = m4.lookAt(cameraPosition, tar, up);
+        let cameraMatrix = null;
+        if(camera_override){
+            console.debug(camera_override.position, tar)
+            cameraMatrix= m4.lookAt([camera_override.position.x, camera_override.position.z, camera_override.position.y*-1], tar, up);
+            //cameraMatrix= m4.lookAt([1, 3.5, 11], tar, up);
+        }
+        else{
+            cameraMatrix= m4.lookAt(cameraPosition, tar, up);
+        }
 
         // Make a view matrix from the camera matrix.
         let viewMatrix = m4.inverse(cameraMatrix);
@@ -260,12 +268,23 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(deltaTime, this.mesh)
+        drawScene(deltaTime, this.mesh, this.screen, mirrorText, mirror_mode)
 
 
         // Draw the scene.
-        function drawScene(deltaTime, mesh) {
-            gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+        function drawScene(deltaTime, mesh, mirror, mirrorText) {
+            if(mirror){
+                gl.bindTexture(gl.TEXTURE_2D, mirrorText);
+            }
+            else{
+                if(!mirror_mode){
+                    gl.bindTexture(gl.TEXTURE_2D, mesh.texture);
+                }
+                else{
+                    gl.bindTexture(gl.TEXTURE_2D, mesh.texture_mirror);
+                }
+
+            }
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             gl.enable(gl.DEPTH_TEST);
 

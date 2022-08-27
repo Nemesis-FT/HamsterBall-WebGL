@@ -24,7 +24,6 @@ export class PlayerController{
         window.addEventListener("touchend", this.mouseUp, true)
         window.addEventListener("touchmove", this.mouseMove)
         console.debug("Controller installed.")
-        window.requestAnimationFrame(handler)
     }
 
     uninstall(){
@@ -33,7 +32,6 @@ export class PlayerController{
     }
 
     enableGyro(){
-        console.log("Hi")
         if(window.DeviceMotionEvent)
             window.addEventListener("devicemotion", this.gyro, true)
         else alert("Motion sensors not available on device.")
@@ -45,7 +43,6 @@ export class PlayerController{
 
     gyro(e){
         alert()
-        console.debug(e.acceleration.x, e.acceleration.y)
         if(e.acceleration.x>0){
             queue.x.p=true;
         }
@@ -81,7 +78,6 @@ export class PlayerController{
                     queue.z.n = true;
                 }
                 else queue.z.p = queue.z.n = false
-                console.debug(old.x, old.y, e.clientX, e.clientY)
                 old.x = e.clientX;
                 old.y = e.clientY;
             }
@@ -121,13 +117,6 @@ export class PlayerController{
 
 
     keyDown(e){
-        function cancelAllAnimationFrames(){
-            var id = window.requestAnimationFrame(function(){});
-            console.debug(id)
-            while(id--){
-                window.cancelAnimationFrame(id);
-            }
-        }
         if(e.keyCode === 87) queue.x.p=true;
         if(e.keyCode === 83) queue.x.n=true;
         if(e.keyCode === 65) queue.z.p=true; // a
@@ -143,19 +132,19 @@ export class PlayerController{
         if(e.keyCode === 65) queue.z.p=false;
         if(e.keyCode === 68) queue.z.n=false;
     }
-}
-function handler(){
-    if(queue.x.p){
-        obj.accel.x=0.0005
+    handler(){
+        if(queue.x.p){
+            obj.accel.x=0.0005
+        }
+        if(queue.x.n){
+            obj.accel.x= -0.0005
+        }
+        if(queue.z.p){
+            obj.accel.z= -0.0005
+        }
+        if(queue.z.n){
+            obj.accel.z= 0.0005
+        }
+
     }
-    if(queue.x.n){
-        obj.accel.x= -0.0005
-    }
-    if(queue.z.p){
-        obj.accel.z= -0.0005
-    }
-    if(queue.z.n){
-        obj.accel.z= 0.0005
-    }
-        window.requestAnimationFrame(handler)
 }

@@ -1,0 +1,77 @@
+body {
+    background: #008080;
+}
+
+#screen {
+    margin: 10px;
+    padding: 10px;
+    background: #ffffff;
+    border: thin inset #aaaaaa;
+}
+#ui {
+    margin: 10px;
+    padding: 10px;
+    border: thin inset #aaaaaa;
+    background-color: transparent;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 10;
+}
+
+.window {
+    background: #c0c0c0;
+    font-family: Tahoma, serif;
+}
+
+.bar {
+    background: #000181;
+    color: #ffffff;
+    font-weight:bold;
+    text-align: center;
+}
+.bar button{
+    /*position:absolute;
+    right:3px;
+    top:3px;*/
+    margin:2px 2px 2px 0;
+    float:right;
+    width:14px;
+    height:13.5px;
+    background:#C0C0C0;
+    border-width:1px;
+    border-color:#FFFFFF #808080 #808080 #FFFFFF;
+    padding:0;
+    font-size:9px;
+    font-weight:bold;
+    font-family:Tahoma, serif;
+    text-align:center;
+}
+
+.button{
+    font-family:"MS Sans Serif", sans-serif;
+    font-size:11px;
+    outline:1px solid #000000;
+    background:#C0C0C0;
+    border-width:1px;
+    border-style:solid;
+    border-color:#FFFFFF #808080 #808080 #FFFFFF;
+    padding:4px 10px;
+    margin:20px auto 3px;
+    display:block;
+    position:relative;
+    bottom:0px;
+}
+
+.render_window{
+    position: relative !important;
+}
+
+.container {
+    height: 100%;
+    padding: 0;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

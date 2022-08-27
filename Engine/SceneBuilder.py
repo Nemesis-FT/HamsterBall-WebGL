@@ -118,6 +118,7 @@ class WM_OT_myOp(bpy.types.Operator):
                 "path": "Models/" + name + ".obj",
                 "player": "true" if name.startswith("Player") else "false",
                 "active": "true" if name.startswith("Player") else "false",
+                "screen": "true" if name.startswith("Screen") else "false",
                 "collider": collider,
                 "coords": {"x": obj.location[0], "y": obj.location[1] * -1 if name == "Player" else obj.location[1],
                            "z": obj.location[2]}

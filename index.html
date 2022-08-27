@@ -32,6 +32,16 @@
             top: 0px;
             z-index: 10;
         }
+        #mirror {
+            margin: 10px;
+            padding: 10px;
+            border: thin inset #aaaaaa;
+            background-color: transparent;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            z-index: -10;
+        }
 
         .window {
             background: #c0c0c0;
@@ -66,12 +76,18 @@
             WebGL Application
         </div>
         <div class="render_window">
+            <canvas width="800" height="600" id="mirror"></canvas>
             <canvas width="800" height="600" id="screen"></canvas>
             <canvas width="800" height="600" id="ui"></canvas>
+
         </div>
+
+        <canvas width="800" height="600" id="2d" hidden></canvas>
     </div>
 </div>
+
 </body>
+
 <script type="text/javascript" src="Libs/webgl-utils.js"></script>
 <script type="text/javascript" src="Libs/glm_utils.js"></script>
 <script type="text/javascript" src="Libs/m4.js"></script>

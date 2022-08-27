@@ -70,14 +70,15 @@ export class MeshLoader {
         }
     }
 
-    async load(filepath, gl, isPlayer, isActive, coords, alias, collider) {
+    async load(filepath, gl, mirror_gl, isPlayer, isActive, coords, alias, collider, mirror) {
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
         for (let i = 0; i < mesh.data.materials.length; i++) {
             let map = mesh.data.materials[i].parameter;
             let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
-            let a = await this.texture_loader(gl, path, map.get("map_Kd"))
+            let a = await this.texture_loader(gl, path, map.get("map_Kd"), false)
+            let b = await this.texture_loader(mirror_gl, path, map.get("map_Kd"), false)
             map.set("map_Kd", a);
 
 
@@ -89,6 +90,7 @@ export class MeshLoader {
             let n_text_coord = mesh.data.textCoords.length;
             mesh.positions = [];
             mesh.texture = a;
+            mesh.texture_mirror = b;
             mesh.normals = [];
             mesh.text_coords = [];
 
@@ -134,6 +136,6 @@ export class MeshLoader {
             }
         }
         //await this.compute_offsets(mesh, coords)
-        this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords, collider))
+        this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords, collider, mirror))
     }
 }
