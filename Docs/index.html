@@ -5,44 +5,282 @@
     <title>Documentazione di Hamsterball WebGl</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<div class="container">
-    <div class="window">
-        <div class="bar">
-            Documentazione di Hamsterball Webgl
+<body>
+<center>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Documentazione di Hamsterball Webgl
+            </div>
+            <div class="body">
+                <p>Questo progetto è stato realizzato per il corso di Computer Graphics del CdL Magistrale in
+                    Informatica
+                    (curriculum A) presso l'università di Bologna.</p>
+                <p>All'interno della documentazione sono contenuti dettagli inerenti allo sviluppo e sulle scelte
+                    sviluppate
+                    da
+                    Lorenzo Balugani, come da consegna dell'esame.</p>
+            </div>
+
         </div>
-        <p>Questo progetto è stato realizzato per il corso di Computer Graphics del CdL Magistrale in Informatica
-            (curriculum A) presso l'università di Bologna.</p>
-        <p>All'interno della documentazione sono contenuti dettagli inerenti allo sviluppo e sulle scelte sviluppate da
-            Lorenzo Balugani, come da consegna dell'esame.</p>
 
     </div>
-
-</div>
-<div class="container">
-    <div class="window">
-        <div class="bar">
-            Il soggetto del progetto
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Il soggetto del progetto
+            </div>
+            <div class="body">
+                <p>Il progetto qui presentato prende ispirazione da un videogioco realizzato da Raptisoft, Hamsterball:
+                    in esso,
+                    lo scopo del giocatore è quello di attraversare livelli nel minor tempo possibile, controllando un
+                    criceto
+                    all'interno di una pallina. Il gioco appartiene al filone dei marble/ball game, popolari ad inizio
+                    anni 2000, e i requisiti di tali videogiochi, da un punto di vista tecnico, sono:</p>
+                <ul>
+                    <li>
+                        Un motore fisico, in grado di gestire accelerazioni sui 3 assi per il movimento della sfera
+                        controllata dal giocatore;
+                    </li>
+                    <li>
+                        Un sistema di gestione delle collisioni, in modo da poter gestire correttamente le interazioni
+                        della sfera con l'ambiente fisico;
+                    </li>
+                    <li>
+                        Presenza di un editor di livelli;
+                    </li>
+                </ul>
+                <p>All'interno dei marble game l'obiettivo è quello di raggiungere il traguardo nel minor tempo
+                    possibile,
+                    al fine di realizzare un'high score e cercando di non cadere giù per il percorso. In questo senso,
+                    qualsiasi strategia e scorciatoia sono leciti per raggiungere la fine della pista.
+                </p>
+                <hr>
+                <p>
+                    Per mostrare un esempio di tecniche di rendering avanzato, sono stati implementati gli "schermi",
+                    ovvero oggetti di scena la cui texture viene elaborata a tempo di rendering, in quanto mostra il
+                    punto
+                    di vista di una telecamera piazzata all'interno dello scenario. Inoltre, il gioco è stato reso
+                    altamente
+                    modificabile, con la possibilità per l'utente di realizzare i suoi livelli su Blender ed esportarli
+                    direttamente, modificando solo qualche riga all'interno del programma.</p>
+            </div>
         </div>
-        <p>Il progetto qui presentato prende ispirazione da un videogioco realizzato da Raptisoft, Hamsterball: in esso,
-            lo scopo del giocatore è quello di attraversare livelli nel minor tempo possibile, controllando un criceto
-            all'interno di una pallina. Il gioco appartiene al filone dei marble/ball game, popolari ad inizio anni 2000, e i requisiti di tali videogiochi, da un punto di vista tecnico, sono:</p>
-        <ul>
-            <li>
-                Un motore fisico, in grado di gestire accelerazioni sui 3 assi per il movimento della sfera controllata dal giocatore;
-            </li>
-            <li>
-                Un sistema di gestione delle collisioni, in modo da poter gestire correttamente le interazioni della sfera con l'ambiente fisico;
-            </li>
-            <li>
-                Rendering tridimensionale;
-            </li>
-        </ul>
+    </div>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Utilizzo dell'applicazione
+            </div>
+            <div class="body">
+                <p>
+                    L'applicazione può essere utilizzata in due modi: o visitando il link del github pages del progetto
+                    (<a
+                        href="https://nemesis-ft.github.io/HamsterBall-WebGL/">qui</a>) oppure scaricandolo localmente
+                    dal
+                    repository github (<a href="https://github.com/Nemesis-FT/HamsterBall-WebGL">qui</a>), dov'è
+                    rilasciato
+                    sotto licenza GPL-3.0, e aprendo il file "index.html" nella cartella "Project". Una volta avviato,
+                    sarà
+                    visibile la seguente schermata:
+                </p>
+                <center>
+                    <img src="images/Menu.PNG" class="image">
+                </center>
+                <p>E' possibile interagire con il menu principale con il mouse oppure con il touchscreen. Tramite
+                    l'interfaccia, è possibile selezionare il livello, avviare la partita, attivare o disattivare gli
+                    schermi e - se presenti - visualizzare i record del tracciato. Per tornare al menu, in qualsiasi
+                    momento, è sufficiente premere "esc" sulla tastiera oppure ricaricare la pagina.</p>
+                <hr>
+                <p>Una volta avviata una gara, seguirà un tempo di caricamento: la durata di questo caricamento può
+                    dipendere dalla connessione (se sta venendo giocato tramite github pages) e dalla presenza o meno
+                    dei modelli all'interno della cache.</p>
+                <center>
+                    <img src="images/Gameplay.PNG" class="image">
+                </center>
+                <p>
+                    L'interfaccia utente mostra il nome del livello e il tempo trascorso in secondi. Dallo screenshot è
+                    inoltre
+                    possibile visualizzare la linea di partenza, con una texture a scacchiera applicata su una faccia,
+                    un
+                    elemento rampa e lo schermo che visualizza la scena da un diverso punto di vista. La telecamera del
+                    giocatore è vincolata in una sola posizione e segue la palla (una ico-sphere) all'interno del
+                    percorso.
+                </p>
+                <p>
+                    Per muoversi, l'utente può impiegare i tasti WASD, muovere il mouse tenendo premuto il tasto
+                    sinistro oppure
+                    utilizzare il touch screen per muovere la sfera.
+                </p>
+                <p>
+                    Una volta giunti al traguardo, il cronometro verrà bloccato e il tempo mostrato a schermo. Nel caso
+                    in cui il tempo attuale sia migliore del record, verrà memorizzato all'interno del localstorage del
+                    browser e mostrato nel menu principale. Nel caso in cui la pallina dovesse cadere, una volta
+                    superato
+                    un "deathplane" verrà ripristinata alla linea di partenza.
+                </p>
+            </div>
 
-
+        </div>
 
     </div>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Scelte progettuali
+            </div>
+            <div class="body">
+                <p>Non potendo utilizzare strumenti esterni - oltre a quelli forniti - è stato deciso di costruire un
+                    rudimentale motore di gioco, che si occupi del rendering della scena, della simulazione fisica
+                    e dell'input utente. Il risultato prende il nome di SlingShot Engine, e si compone di diverse classi
+                    javascript:</p>
+                <ul>
+                    <li><b>Engine.js</b>: la classe principale, gestisce il loop di gioco e consente di caricare una
+                        scena da un file json, delegando il caricamento delle mesh ad un oggetto MeshLoader e
+                        memorizzandole all'interno di PhysObject. Per ogni frame di animazione verifica l'input utente,
+                        calcola la fisica (solo ogni 16 ms) per poi eseguire il rendering (1 o 2 volte, a seconda
+                        dell'attivazione e della presenza degli schermi).
+                    </li>
+                    <li><b>MeshLoader.js</b>: adattamento del codice del professor Casciola per caricare mesh da file
+                        .obj. Il risultato finale viene inserito all'interno di un oggetto PhysObject.
+                    </li>
+                    <li><b>PhysObject.js</b>: classe che rappresenta un oggetto fisico, attivo o passivo. Contiene
+                        diversi attributi particolari oltre alla mesh, come "isPlayer" (l'oggetto può venire controllato
+                        dal giocatore?), "isActive" (l'oggetto è attivo da un punto di vista fisico?), "isScreen"
+                        (l'oggetto è uno schermo?) e altre propietà come velocità, accelerazione e collision box.
+                        Nel caso in cui l'oggetto sia passivo (ad esempio, una rampa), la collision box viene
+                        pre-calcolata, mentre se è attivo (la sfera) questo viene calcolato ad ogni elaborazione delle
+                        collisioni.
+                        Il physobject, oltre che essere responsabile del proprio rendering, è anche responsabile del
+                        calcolo della fisica e delle collisioni: esistono diversi tipi di collisione ("box", "ramp",
+                        "goal",...) e possono venire utilizzati per attivare determinati eventi (una collisione con un
+                        oggetto "goal" porta alla conclusione del livello, ad esempio).
+                    </li>
+                    <li><b>PlayerController.js</b>: gestisce tutte le interazioni con l'utente, agendo su un certo
+                        oggetto.
+                    </li>
+                    <li><b>Scene.js</b>: rappresenta una scena caricata da file .json, all'interno della quale sono
+                        presenti i metadati di scena e degli oggetti che ne fanno parte.
+                    </li>
+                    <li><b>SceneBuilder.py</b>: estensione per Blender per l'export di livelli.
+                    </li>
+                    <li><b><i>UI</i></b>: cartella che contiene gli elementi dell'interfaccia utente.</li>
+                    <ul>
+                        <li><b>UI.js</b>: utilizzata per "scrivere" sul canvas 2d dell'UI.</li>
+                        <li><b>Button.js</b>: classe padre dei bottoni.</li>
+                        <li><b>LevelSelectButton.js</b>: bottone per la selezione livello, consente di scorrere un
+                            vettore di livelli datogli in input.
+                        </li>
+                        <li><b>ScreenButton.js</b>: bottone per l'attivazione degli schermi.</li>
+                        <li><b>StartButton.js</b>: bottone per il caricamento del livello selezionato.</li>
+                    </ul>
+                </ul>
+                <p>
+                    All'interno dello script "main.js" è contenuta la definizione di eventi custom per effettuare il
+                    caricamento di nuovi livelli e di un'istanza di engine, scena e sceneloader. Le Mesh e i livelli
+                    sono
+                    salvati all'interno della cartella "Models".
+                </p>
+                <hr>
+                <p>
+                    Al fine di velocizzare la creazione di livelli, è stato utilizzato blender per posizionare e
+                    realizzare
+                    le mesh dei "blocchi" che compongono un livello. E' stata inoltre realizzata un'estensione per
+                    Blender
+                    in grado di esportare tutti gli oggetti di un livello singolarmente, per poi creare un file di
+                    metadati
+                    per la descrizione del livello. Questa estensione, SceneBuilder.py, può essere installata come
+                    qualsiasi
+                    plugin e dispone di un'interfaccia utente. Il file contenente tutti i livelli è "Levels.blend",
+                    nella
+                    cartella "Models". Un utente terzo può, quindi, liberamente aggiungere livelli al gioco, con ben
+                    poco sforzo.
+                </p>
+                <center>
+                    <img src="images/Blender.PNG" class="image" style="width:90%; max-width: 90%">
+                </center>
+            </div>
 
-</div>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Rendering avanzato
+            </div>
+            <div class="body">
+                <p>Come esempio di rendering avanzato, il programma presenta all'utente degli schermi. La texture di
+                    questi è il risultato di un processo di rendering aggiuntivo che utilizza una "telecamera" diversa
+                    da quella dell'utente, il cui risultato viene memorizzato su
+                    un canvas webgl "nascosto" e poi trasformato in immagine tramite l'uso di un canvas 2d. L'immagine
+                    che ne risulta viene poi impiegata come texture, e poi mostrata all'utente. Questa opzione causa un
+                    prevedibile peggioramento delle performance, dovuto al dover attendere per il secondo rendering
+                    e le operazioni di trasformazione che ne conseguono.</p>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Caratteristiche di webgl impiegate
+            </div>
+            <div class="body">
+                <ul>
+                    <li>
+                        Fragment e Vertex shader per implementazione del modello di illuminazione come visto a lezione,
+                        con supporto per le texture e caratteristiche dei materiali.
+                    </li>
+                    <li>
+                        Utilizzo del contesto webgl per la resa della scena.
+                    </li>
+                    <li>
+                        Cattura dei warning di webgl per adottare contromisure (errori nel caricamento texture, etc);
+                    </li>
+                    <li>
+                        Antialiasing, per la riduzione dell'effetto "seghettatura" dei modelli;
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <div class="window">
+            <div class="bar">
+                Particolarità del progetto
+            </div>
+            <div class="body">
+                <ul>
+                    <li>
+                        Framework custom per la gestione del rendering, della fisica e delle collisioni.
+                    </li>
+                    <li>
+                        Simulazione fisica, con gestione di accelerazione e attriti.
+                    </li>
+                    <li>
+                        Caricamento di diverse scene tramite eventi personalizzati.
+                    </li>
+                    <li>
+                        Plugin per la creazione di livelli con Blender.
+                    </li>
+                    <li>
+                        Interazioni con mouse, tastiera e touchscreen.
+                    </li>
+                    <li>
+                        Interfaccia utente completamente self-contained all'interno del canvas.
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+</center>
 </body>
 </html>
 

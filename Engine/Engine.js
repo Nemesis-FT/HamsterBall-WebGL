@@ -222,9 +222,6 @@ export class Engine {
 
         let program = webglUtils.createProgramFromScripts(this.gl, ["3d-vertex-shader", "3d-fragment-shader"])
         let program2 = webglUtils.createProgramFromScripts(this.mirror_gl, ["3d-vertex-shader", "3d-fragment-shader"])
-        let flag = false
-
-        this.delta = time - this.curr_time;
         let camera_coords = this.find_actor_coords()
         if (!this.die) {
             this.gl.useProgram(program);
@@ -234,7 +231,7 @@ export class Engine {
                 reflection = await this.generate_reflection()
                 this.mirror_gl.useProgram(program2);
                 await this.meshlist.forEach(elem => {
-                    elem.render(this.delta, this.mirror_gl, {
+                    elem.render(this.mirror_gl, {
                         ambientLight: [0.2, 0.2, 0.2],
                         colorLight: [1.0, 1.0, 1.0]
                     }, program2, camera_coords, null, (screens ? screens[0]:{position:{x:1,z:3.5,y:-11}}), true);
@@ -244,7 +241,7 @@ export class Engine {
                 if(elem.mirror && !this.mirror_enabled){
                     return;
                 }
-                elem.render(this.delta, this.gl, {
+                elem.render(this.gl, {
                     ambientLight: [0.2, 0.2, 0.2],
                     colorLight: [1.0, 1.0, 1.0]
                 }, program, camera_coords, reflection);

@@ -1,5 +1,6 @@
 body {
     background: #008080;
+
 }
 
 #screen {
@@ -17,6 +18,17 @@ body {
     left: 0px;
     top: 0px;
     z-index: 10;
+}
+
+.image{
+    border: thin inset #aaaaaa;
+    max-width: 60%;
+    min-width: 60%;
+}
+
+.body{
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 .window {
@@ -74,4 +86,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: 60%;
+    min-width: 60%;
 }

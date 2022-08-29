@@ -175,7 +175,7 @@ export class PhysObject {
     }
 
 
-    render(deltaTime, gl, light, program, tar, mirrorText, camera_override=null, mirror_mode=false) {
+    render(gl, light, program, tar, mirrorText, camera_override=null, mirror_mode=false) {
 
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
@@ -268,11 +268,11 @@ export class PhysObject {
         }
 
         let vertNumber = this.mesh.numVertices;
-        drawScene(deltaTime, this.mesh, this.screen, mirrorText, mirror_mode)
+        drawScene(this.mesh, this.screen, mirrorText, mirror_mode)
 
 
         // Draw the scene.
-        function drawScene(deltaTime, mesh, mirror, mirrorText) {
+        function drawScene(mesh, mirror, mirrorText) {
             if(mirror){
                 gl.bindTexture(gl.TEXTURE_2D, mirrorText);
             }
