@@ -225,7 +225,6 @@ export class PhysObject {
         // Compute the camera's matrix using look at.
         let cameraMatrix = null;
         if(camera_override){
-            console.debug(camera_override.position, tar)
             cameraMatrix= m4.lookAt([camera_override.position.x, camera_override.position.z, camera_override.position.y*-1], tar, up);
             //cameraMatrix= m4.lookAt([1, 3.5, 11], tar, up);
         }
@@ -254,14 +253,6 @@ export class PhysObject {
 
         // Tell the shader to use texture unit 0 for diffuseMap
         gl.uniform1i(textureLocation, 0);
-
-        function isPowerOf2(value) {
-            return (value & (value - 1)) === 0;
-        }
-
-        function radToDeg(r) {
-            return r * 180 / Math.PI;
-        }
 
         function degToRad(d) {
             return d * Math.PI / 180;

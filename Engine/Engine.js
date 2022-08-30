@@ -4,46 +4,39 @@ import {Button} from "./UI/Button.js"
 import {LevelSelectButton} from "./UI/LevelSelectButton.js";
 import {StartButton} from "./UI/StartButton.js";
 import {ScreenButton} from "./UI/ScreenButton.js";
+/*
+This is the Engine class of the SlingShot Engine. It loads up meshes from a Scene type object, and then computes
+the physics, reads player input and renders the scene.
+ */
 
-
+// Common data among engine instances.
 let ui;
-let btn
-let btn1
-let btn2
+// Edit this to add more levels. json files must be placed under the "Models" folder with their meshes.
 let levels = ["level1.json", "level2.json"]
+let levelNames = ["Standard Race", "Ramp Race"]
 let offset = 0;
 let last_update = 0;
-let old_reflection = null;
 let old_image = null;
-let flag
 
 function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
-function dataURLtoFile(dataurl, filename) {
-    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, {type: mime});
-}
-
 export class Engine {
     constructor(id) {
+        // Constructor for the engine. It initializes everything it needs and obtains the webgl context.
         this.curr_time = 0;
         this.meshlist = []
         this.gl = null;
-        this.ext = null;
         this.time_offset = 0;
         this.scene_curr = null;
-        this.code = Math.floor(Math.random() * 10);
         console.debug("SlingShot Engine booting up...")
         this.canvas = document.getElementById(id);
         this.die = false;
         this.nextlevel = "";
         this.advance_timer = true;
+        // A bunch of custom event listeners. loadlevel-pre prepares loadup of a new scene, while level_complete stops
+        // the timer and then puts the player back to menu, while updating high scores.
         window.addEventListener('loadlevel_pre', async (e) => {
             this.die = true
             this.nextlevel = e.detail.scene
@@ -55,6 +48,7 @@ export class Engine {
         window.addEventListener('level_complete', async (e) => {
             this.advance_timer = false;
             let time = this.curr_time - this.time_offset
+            // Safety countermeasure.
             if (time === 0) {
                 return;
             }
@@ -62,6 +56,7 @@ export class Engine {
                 x: this.gl.canvas.width / 2,
                 y: 20
             }, "Level completed in " + time + "s.")
+            // Data is saved in the localstorage.
             let s = localStorage.getItem("level")
             let best = localStorage.getItem(s);
             if (!best) {
@@ -76,24 +71,30 @@ export class Engine {
 
         })
         this.gl = this.canvas.getContext("webgl", {antialias: true});
-        this.mirror_canvas = document.getElementById("mirror")
-        this.mirror_gl = this.mirror_canvas.getContext("webgl", {preserveDrawingBuffer: true})
-        this.mirror_enabled = false;
-
+        /*
+        Obtains the mirror canvas, used to render a different perspective. The drawingbuffer is preserved and
+        manually reset in order to capture its contents and transpose them in a 2d-context canvas.
+        */
+        this.screen_canvas = document.getElementById("mirror")
+        this.screen_gl = this.screen_canvas.getContext("webgl", {preserveDrawingBuffer: true})
+        this.screen_enabled = false;
+        // Checks whether or not opengl context is available.
         if (!this.gl) {
             alert("This browser does not support opengl acceleration.")
             return;
         }
+        // Initializes the meshlist, and then creates a MeshLoader object to fill it up.
         this.meshlist = [];
         this.scene = null;
         this.loader = new MeshLoader(this.meshlist)
         this.ui = new UI("ui")
         ui = this.ui
+        // Buttons definitions.
         this.btn = new LevelSelectButton("", {
             coordinates: {x: this.gl.canvas.width / 2, y: this.gl.canvas.height / 2},
             width: 500,
             height: 50
-        }, ui.canvas, ui.ctx, ["Standard Race", "Ramp Race"])
+        }, ui.canvas, ui.ctx, levelNames)
         this.btn1 = new StartButton("Start", {
             coordinates: {
                 x: this.gl.canvas.width / 2 - this.btn.geometry.width / 4 - 10,
@@ -113,8 +114,16 @@ export class Engine {
     }
 
     async generate_reflection() {
-
-        function addImageProcess(src){
+        /*
+         Reflection generation routine. It takes the rendered image on the mirror canvas,
+         puts it on a 2d context canvas and then uses it as a texture.
+         */
+        function addImageProcess(src) {
+            /*
+             This function returns a promise that is used to wait for texture loading time. If not used, as soon as
+             something happens on the physics side, the loadtime increases just enough to make webgl panic and blank out
+             the texture.
+             */
             return new Promise((resolve, reject) => {
                 let img = new Image()
                 img.onerror = reject
@@ -123,90 +132,72 @@ export class Engine {
             })
         }
 
-        function flipImage(image, ctx, flipH, flipV) {
-            var scaleH = flipH ? -1 : 1, // Set horizontal scale to -1 if flip horizontal
-                scaleV = flipV ? -1 : 1, // Set verical scale to -1 if flip vertical
-                posX = flipH ? ctx.canvas.width * -1 : 0, // Set x position to -100% if flip horizontal
-                posY = flipV ? ctx.canvas.height * -1 : 0; // Set y position to -100% if flip vertical
-
-            ctx.save(); // Save the current state
-            ctx.scale(scaleH, scaleV); // Set scale to flip the image
-
-            ctx.drawImage(image, posX, posY, ctx.canvas.width, ctx.canvas.height); // draw the image
-            ctx.restore(); // Restore the last saved state
-        };
-
+        // On the main menu, there's no need to load mirror texture data.
         if (this.scene_curr.name === "menu") return this.gl.createTexture();
-        let pixels = new Uint8Array(this.mirror_gl.drawingBufferWidth * this.mirror_gl.drawingBufferHeight * 4);
-        this.mirror_gl.readPixels(0, 0, this.mirror_gl.drawingBufferWidth, this.mirror_gl.drawingBufferHeight, this.mirror_gl.RGBA, this.mirror_gl.UNSIGNED_BYTE, pixels);
-
-
+        // Read the pixels from the mirror canvas.
+        let pixels = new Uint8Array(this.screen_gl.drawingBufferWidth * this.screen_gl.drawingBufferHeight * 4);
+        this.screen_gl.readPixels(0, 0, this.screen_gl.drawingBufferWidth, this.screen_gl.drawingBufferHeight, this.screen_gl.RGBA, this.screen_gl.UNSIGNED_BYTE, pixels);
+        // Obtain 2d canvas and context
         let canvas = document.getElementById("2d")
         let context = canvas.getContext("2d")
-        context.fillRect(0,0, context.canvas.width, context.canvas.height)
-        context.scale(-1, 1);
+        // Blank out the 2d canvas
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height)
         var idata = context.createImageData(canvas.width, canvas.height);
         idata.data.set(pixels)
         context.putImageData(idata, 0, 0)
-
-        //var dataUri_pre = canvas.toDataURL();
-        //let image_pre = await addImageProcess(dataUri_pre)
-        //flipImage(image_pre, context, 1, 0)
+        // Obtain base64 image url and then load it up as an image.
         let dataUri = canvas.toDataURL();
         let image = await addImageProcess(dataUri)
 
-
+        // Create a texture.
         const texture = this.gl.createTexture();
+        // Bind it to the webgl context (since it has to be rendered there)
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        const level = 0;
-        const internalFormat = this.gl.RGBA;
-        const width = 1;
-        const height = 1;
-        const border = 0;
-        const srcFormat = this.gl.RGBA;
-        const srcType = this.gl.UNSIGNED_BYTE;
-        const pixel = new Uint8Array([255, 255, 255, 255]);  // opaque blue
-        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat,
-            width, height, border, srcFormat, srcType, pixel);
-
+        // Attempts to obtain texture
         try {
             this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
             this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+            /*
+            If an error occurs during texture initialization, it means that for whatever reason the image wasn't ready.
+            As a contermeasure, the last image that was rendered is used.
+             */
+
             if (this.gl.getError() !== 0) {
                 console.debug(image)
-                this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, old_image);
+                this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image)
             } else {
                 old_image = image
             }
+            // Applies linear texture filtering and sets up the texture wrapping.
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-            this.mirror_gl.clear(this.mirror_gl.DEPTH_BUFFER_BIT | this.mirror_gl.COLOR_BUFFER_BIT);
-        }
-        catch (e){
-
+            // Clears the webgl_screen canvas.
+            this.screen_gl.clear(this.screen_gl.DEPTH_BUFFER_BIT | this.screen_gl.COLOR_BUFFER_BIT);
+        } catch (e) {
+            console.debug("Image not ready for reflection...")
         }
         return texture;
-
-        function isPowerOf2(value) {
-            return (value & (value - 1)) === 0;
-        }
     }
 
     async load_scene(scene) {
+        // Sets internal and current scene as the ones that are provided.
         this.scene = scene;
         this.scene_curr = scene;
         console.debug(" Loading scene...")
         for (const obj of scene.objs) {
-            await this.loader.load(obj.path, this.gl, this.mirror_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider, obj.screen)
+            // Loads up the meshes using the MeshLoader object.
+            await this.loader.load(obj.path, this.gl, this.screen_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider, obj.screen)
         }
         console.debug(" Scene loaded.")
     }
 
     render = async (time = 0) => {
-        //this.generate_reflection()
+        /*
+        This method is called as frequently as possible using the requestAnimationFrame function.
+         */
         if (time === 0) {
             if (this.scene_curr.name !== "menu") {
                 this.btn.disable()
@@ -218,27 +209,43 @@ export class Engine {
                 this.btn2.enable()
             }
         }
+        // Update selected level id
         this.btn1.levelId = this.btn.idx;
-
+        // Create wsgl programs for both screen and non-screen context
         let program = webglUtils.createProgramFromScripts(this.gl, ["3d-vertex-shader", "3d-fragment-shader"])
-        let program2 = webglUtils.createProgramFromScripts(this.mirror_gl, ["3d-vertex-shader", "3d-fragment-shader"])
+        let program2 = webglUtils.createProgramFromScripts(this.screen_gl, ["3d-vertex-shader", "3d-fragment-shader"])
+        // Compute camera coords.
         let camera_coords = this.find_actor_coords()
         if (!this.die) {
+            // Main rendering loop.
             this.gl.useProgram(program);
             let reflection = null
-            if (this.mirror_enabled) {
+            if (this.screen_enabled) {
+                // If screens are enabled, then the 2nd camera POV is computed.
                 let screens = this.find_screens()
                 reflection = await this.generate_reflection()
-                this.mirror_gl.useProgram(program2);
+                this.screen_gl.useProgram(program2);
                 await this.meshlist.forEach(elem => {
-                    elem.render(this.mirror_gl, {
+                    if(elem.collider==="death"){
+                        return;
+                    }
+                    // The elements are rendered with camera settings override.
+                    elem.render(this.screen_gl, {
                         ambientLight: [0.2, 0.2, 0.2],
                         colorLight: [1.0, 1.0, 1.0]
-                    }, program2, camera_coords, null, (screens ? screens[0]:{position:{x:1,z:3.5,y:-11}}), true);
+                    }, program2, camera_coords, null, (screens ? screens[0] : {
+                        position: {
+                            x: 1,
+                            z: 3.5,
+                            y: -11
+                        }
+                    }), true);
                 })
             }
+            // Renders the entire scene from the player's POV.
             await this.meshlist.forEach(elem => {
-                if(elem.mirror && !this.mirror_enabled){
+                // If mirrors are disabled, they do not get rendered.
+                if (elem.mirror && !this.screen_enabled) {
                     return;
                 }
                 elem.render(this.gl, {
@@ -248,14 +255,18 @@ export class Engine {
             })
 
         }
+        // Finds the player
         let actor = this.find_actor()
+        // Checks for user input
         actor.pc.handler()
+        // Computes physics if necessary, ideally each 16 ms.
         if (this.scene_curr.phys && !this.die && time - last_update > 16) {
             actor.compute_phys(this.meshlist)
             last_update = time
         }
         if (this.scene_curr.name !== "menu") {
-            this.mirror_enabled = localStorage.getItem("mirrors") === "true"
+            // UI control for level mode
+            this.screen_enabled = localStorage.getItem("mirrors") === "true"
             if (this.advance_timer) {
                 this.curr_time = time - offset;
             }
@@ -266,9 +277,10 @@ export class Engine {
                 ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
             }
         } else {
+            // Ui control for main menu.
             localStorage.setItem("level", levels[this.btn1.levelId])
-            this.mirror_enabled = this.btn2.value;
-            if (this.mirror_enabled) {
+            this.screen_enabled = this.btn2.value;
+            if (this.screen_enabled) {
                 localStorage.setItem("mirrors", "true")
             } else {
                 localStorage.setItem("mirrors", "false")
@@ -304,10 +316,11 @@ export class Engine {
             }, "This is not a commercial product. The hamsterball trademark is property of Raptisoft.")
         }
         if (!this.die) {
+            // Queues up for next frame
             this.animId = window.requestAnimationFrame(this.render)
         } else {
+            // Engine SIGTERM handler
             console.debug("Killing engine...")
-
             window.dispatchEvent(new CustomEvent('loadlevel', {detail: {scene: this.nextlevel}}))
             this.meshlist = []
             this.curr_time = -1
@@ -315,6 +328,8 @@ export class Engine {
         }
 
     }
+
+    // Utility functions
 
     find_actor() {
         let actor = null;
@@ -327,7 +342,7 @@ export class Engine {
         return actor;
     }
 
-    find_screens(){
+    find_screens() {
         let screens = [];
         for (let i = 0; i < this.meshlist.length; i++) {
             if (this.meshlist[i].screen) {

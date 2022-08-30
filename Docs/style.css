@@ -29,6 +29,11 @@ body {
 .body{
     text-align: justify;
     text-justify: inter-word;
+    margin: 4px;
+}
+
+ul{
+    margin-right: 8px;
 }
 
 .window {
