@@ -305,14 +305,10 @@ export class Engine {
             ui.draw('14pt Calibri', "black", {
                 x: this.gl.canvas.width / 2,
                 y: this.gl.canvas.height - 30
-            }, "Powered by SlingShot Engine.")
+            }, "Powered by SlingShot Engine, developed by Lorenzo Balugani.")
             ui.draw('14pt Calibri', "black", {
                 x: this.gl.canvas.width / 2,
                 y: this.gl.canvas.height - 15
-            }, "This program and its engine were developed by Lorenzo Balugani.")
-            ui.draw('14pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: this.gl.canvas.height
             }, "This is not a commercial product. The hamsterball trademark is property of Raptisoft.")
         }
         if (!this.die) {
