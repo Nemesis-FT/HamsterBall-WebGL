@@ -1,13 +1,16 @@
+// Common variables in module
+
+// User input queue
 let queue = {x:{p:false, n:false}, z:{p:false, n:false}};
 let obj = null;
 let canvas = null;
 let drag = false;
-let gyro = null;
 let old = {x:null, y:null};
 
 export class PlayerController{
 
     constructor(object) {
+        // Controller constructor, saves actor object inside itself.
         this.object = object;
         obj = object
         canvas = document.getElementById("ui");
@@ -15,6 +18,7 @@ export class PlayerController{
     }
 
     install(){
+        // Installs event listeners for all input methods.
         window.addEventListener("keydown", this.keyDown, true)
         window.addEventListener("keyup", this.keyUp, true)
         window.addEventListener("mousedown", this.mouseDown, true)
@@ -27,40 +31,20 @@ export class PlayerController{
     }
 
     uninstall(){
-        window.removeEventListener("keydown", this.keyDown);
-        window.removeEventListener("keyup", this.keyUp)
-    }
-
-    enableGyro(){
-        if(window.DeviceMotionEvent)
-            window.addEventListener("devicemotion", this.gyro, true)
-        else alert("Motion sensors not available on device.")
-    }
-
-    disableGyro(){
-        window.removeEventListener("devicemotion")
-    }
-
-    gyro(e){
-        alert()
-        if(e.acceleration.x>0){
-            queue.x.p=true;
-        }
-        else if(e.acceleration.x<0){
-            queue.x.n=true;
-        }
-        else queue.x.n = queue.x.p=false
-        if(e.acceleration.y<0){
-            queue.z.p = true;
-        }
-        else if(e.acceleration.y>0){
-            queue.z.n = true;
-        }
-        else queue.z.p = queue.z.n = false
+        // Uninstalls event listeners for all input methods.
+        window.removeEventListener("keydown", this.keyDown, true)
+        window.removeEventListener("keyup", this.keyUp, true)
+        window.removeEventListener("mousedown", this.mouseDown, true)
+        window.removeEventListener("mouseup", this.mouseUp, true)
+        window.removeEventListener("mousemove", this.mouseMove, true)
+        window.removeEventListener("touchstart", this.mouseDown, true)
+        window.removeEventListener("touchend", this.mouseUp, true)
+        window.removeEventListener("touchmove", this.mouseMove)
+        console.debug("Controller uninstalled.")
     }
 
     mouseMove(e){
-
+        // Basic mouse/touch movement interaction on drag.
         if(drag){
             if(e instanceof TouchEvent){
                 e = e.changedTouches[0]
@@ -101,6 +85,7 @@ export class PlayerController{
     }
 
     mouseDown(e){
+        // Basic mouse/touch start of interaction
         if(e instanceof TouchEvent){
         old.x = e.changedTouches[0].clientX;
         old.y = e.changedTouches[0].clientY;
@@ -109,6 +94,7 @@ export class PlayerController{
     }
 
     mouseUp(e){
+        // Basic mouse/touch end of interaction
         drag = false;
         queue.z.p = queue.z.n = queue.x.n = queue.x.p=false
         old = {x:null, y:null};
@@ -117,6 +103,7 @@ export class PlayerController{
 
 
     keyDown(e){
+        // Basic key press handling
         if(e.keyCode === 87) queue.x.p=true;
         if(e.keyCode === 83) queue.x.n=true;
         if(e.keyCode === 65) queue.z.p=true; // a
@@ -127,12 +114,15 @@ export class PlayerController{
     }
 
     keyUp(e){
+        // Basic key lift handling
         if(e.keyCode === 87) queue.x.p=false;
         if(e.keyCode === 83) queue.x.n=false;
         if(e.keyCode === 65) queue.z.p=false;
         if(e.keyCode === 68) queue.z.n=false;
     }
+
     handler(){
+        // Based on queue, applies acceleration to selected axis.
         if(queue.x.p){
             obj.accel.x=0.0005
         }

@@ -10,7 +10,6 @@ bl_info = {
     "category": "SlingShot Exporter",
 }
 
-import bpy
 import os
 import json
 
@@ -26,9 +25,7 @@ from bpy.types import (Panel,
                        )
 
 
-# ------------------------------------------------------------------------
-#    Scene Properties
-# ------------------------------------------------------------------------
+# Custom Props for UI interactions.
 
 class MyProperties(PropertyGroup):
 
@@ -46,9 +43,7 @@ class MyProperties(PropertyGroup):
 
 
 
-# ------------------------------------------------------------------------
-#    Panel in Object Mode
-# ------------------------------------------------------------------------
+# Custom panels
 
 class OBJECT_PT_CustomPanel(Panel):
     bl_label = "SlingShot Exporter"
@@ -63,6 +58,7 @@ class OBJECT_PT_CustomPanel(Panel):
         return context.object is not None
 
     def draw(self, context):
+        # Method that gets called upon UI drawing
         layout = self.layout
         scene = context.scene
         mytool = scene.my_tool
@@ -99,12 +95,12 @@ class WM_OT_myOp(bpy.types.Operator):
         for obj in selection:
 
             obj.select_set(True)
-            # some exporters only use the active object
             view_layer.objects.active = obj
 
             name = bpy.path.clean_name(obj.name)
             fn = os.path.join(basedir, name)
             collider = "box"
+            # Collider switch-a-roo
             if name.startswith("Ramp"):
                 collider = "ramp"
             elif name.startswith("DeathPlane"):
@@ -127,7 +123,7 @@ class WM_OT_myOp(bpy.types.Operator):
             bpy.ops.export_scene.obj(filepath=fn + ".obj", use_selection=True)
 
             obj.select_set(False)
-
+        # Dump data onto json file
         fn = os.path.join(basedir, context.scene.my_tool.name+".json")
         with open(fn, 'w') as f:
             json.dump(scenedata, f)
@@ -138,9 +134,7 @@ class WM_OT_myOp(bpy.types.Operator):
             obj.select_set(True)
         return {"FINISHED"}
 
-# ------------------------------------------------------------------------
-#    Registration
-# ------------------------------------------------------------------------
+# Plugin registration stuff.
 
 classes = (
     MyProperties,
@@ -163,4 +157,5 @@ def unregister():
 
 
 if __name__ == "__main__":
+    # Needed for debugging via Blender Script editor.
     register()

@@ -1,13 +1,18 @@
-//This class is a refactor of code written by Professor Casciola from Unibo.
+/*
+This class is a refactor of code written by Professor Casciola from Unibo.
+Refactored to allow multiple materials and to use the async/wait paradigm.
+ */
 
 import {PhysObject} from "./PhysObject.js";
 
 export class MeshLoader {
+    // Class constructor. Sets internal object list.
     constructor(list) {
         this.list = list;
     }
 
     async obj_loader(mesh) {
+        // Async loader, returns mesh once it's ready
         await fetch(mesh.source)
             .then(response => response.text())
             .then(m => {
@@ -18,6 +23,7 @@ export class MeshLoader {
     }
 
     async mtl_loader(filename, mesh) {
+        // Async loader, returns mtl file once it's ready
         await fetch(filename)
             .then(response => response.text())
             .then(mtl => {
@@ -26,6 +32,7 @@ export class MeshLoader {
     }
 
     async texture_loader(gl, path, fileName) {
+        // Async texture loader, same as the one used to generate the screen texture with added mip-mapping routines.
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         const level = 0;
@@ -46,7 +53,8 @@ export class MeshLoader {
                 gl.bindTexture(gl.TEXTURE_2D, texture);
                 gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
                 if (isPowerOf2(image.width) && isPowerOf2(image.height))
-                    gl.generateMipmap(gl.TEXTURE_2D); // Yes, it's a power of 2. Generate mips.
+                    // Generate mipmapping
+                    gl.generateMipmap(gl.TEXTURE_2D);
                 else {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -64,24 +72,28 @@ export class MeshLoader {
     }
 
     async getData(mesh) {
+        // Gets the data of an object, including its mtl.
         await this.obj_loader(mesh);
         if (mesh.fileMtl) {
             await this.mtl_loader(mesh.source.substring(0, mesh.source.lastIndexOf("/")) + "/" + mesh.fileMtl, mesh.data)
         }
     }
 
-    async load(filepath, gl, mirror_gl, isPlayer, isActive, coords, alias, collider, mirror) {
+    async load(filepath, gl, screen_gl, isPlayer, isActive, coords, alias, collider, mirror) {
+        // Mesh loader. Loads a mesh through an async method
         let mesh = [];
         mesh.source = filepath;
         await this.getData(mesh)
+        // Sets up the materials
         for (let i = 0; i < mesh.data.materials.length; i++) {
             let map = mesh.data.materials[i].parameter;
             let path = mesh.source.substring(0, mesh.source.lastIndexOf("/") + 1);
+            // Loads up the texture for the main webgl context and the screens one.
             let a = await this.texture_loader(gl, path, map.get("map_Kd"), false)
-            let b = await this.texture_loader(mirror_gl, path, map.get("map_Kd"), false)
+            let b = await this.texture_loader(screen_gl, path, map.get("map_Kd"), false)
             map.set("map_Kd", a);
 
-
+            // Sets up mesh attributes.
             let x = [], y = [], z = [];
             let xt = [], yt = [];
             let i0, i1, i2;
@@ -99,6 +111,7 @@ export class MeshLoader {
                 y[i] = mesh.data.vert[i + 1].y;
                 z[i] = mesh.data.vert[i + 1].z;
             }
+            // Sets up uvmap;
             for (let i = 0; i < n_text_coord - 1; i++) {
                 xt[i] = mesh.data.textCoords[i + 1].u;
                 yt[i] = mesh.data.textCoords[i + 1].v;
@@ -135,7 +148,7 @@ export class MeshLoader {
                 mesh.opacity = mesh.data.materials[1].parameter.get("Ni");
             }
         }
-        //await this.compute_offsets(mesh, coords)
+        // Adds mesh as PhysObject to internal list.
         this.list.push(new PhysObject(mesh, alias, isActive, isPlayer, coords, collider, mirror))
     }
 }

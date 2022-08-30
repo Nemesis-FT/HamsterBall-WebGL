@@ -2,6 +2,7 @@ import {Engine} from "./Engine.js";
 
 export class Scene {
     constructor(name, objs, phys) {
+        // Represents json file.
         this.name = name;
         this.objs = objs;
         this.die = false;
@@ -13,6 +14,7 @@ export class Scene {
 }
 
 export class SceneLoader {
+    // Async SceneLoader that returns a Scene object via file loading from disk.
     async load(path) {
         let scene = null;
         await fetch(path)
