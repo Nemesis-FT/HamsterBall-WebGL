@@ -51,6 +51,10 @@ export class PhysObject {
                 if (check.data.y.bottom && this.accel.y <= 0) {
                     this.accel.y = this.speed.y = 0
                 }
+                if(check.data.x.bottom)
+                {
+                    this.accel.x = this.speed.x = this.speed.z = this.accel.z = 0
+                }
                 // Attrition calculation
                 let attrition = 0.00004;
                 if (this.accel.x < -attrition && check.coll) {
@@ -154,23 +158,15 @@ export class PhysObject {
         for (const obj in colliders) {
             // Attempt to precise collision detection (which axis is colliding?)
             if (colliders[obj].collider === "box") {
-                if (colliders[obj].position.x <= this.position.x) {
-                    data.x.bottom = true;
-                }
-                if (colliders[obj].position.x > this.position.x) {
-                    data.x.top = true;
-                }
                 if (colliders[obj].position.y <= this.position.y) {
                     data.y.bottom = true;
                 }
                 if (colliders[obj].position.y > this.position.y) {
                     data.y.top = true;
                 }
-                if (colliders[obj].position.z <= this.position.z) {
-                    data.z.bottom = true;
-                }
-                if (colliders[obj].position.z > this.position.z) {
-                    data.z.top = true;
+                if(colliders[obj].boundingBox.max.y > this.position.y){
+                    data.x.top = data.x.bottom = data.z.top = data.z.bottom=true;
+                    data.y.top = data.y.bottom = false;
                 }
             } else {
                 data.y.bottom = true;
