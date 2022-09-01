@@ -106,6 +106,7 @@
   uniform mat4 u_view;
   // Camera position
   uniform vec3 u_viewWorldPosition;
+  uniform vec3 translation;
 
   // Fragment shader varyings
   varying vec3 v_normal;
@@ -114,7 +115,7 @@
 
   void main() {
 
-    gl_Position = u_projection * u_view * vec4(a_position,1);
+    gl_Position = u_projection * u_view * vec4(a_position+translation,1);
     v_surfaceToView = u_viewWorldPosition - vec4(a_position,1).xyz;
     v_normal = a_normal;
     v_texcoord = a_texcoord;

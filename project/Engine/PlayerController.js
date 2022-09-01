@@ -124,10 +124,10 @@ export class PlayerController{
     handler(){
         // Based on queue, applies acceleration to selected axis.
         if(queue.x.p){
-            obj.accel.x=0.0005
+            obj.accel.x=-0.0005
         }
         if(queue.x.n){
-            obj.accel.x= -0.0005
+            obj.accel.x= 0.0005
         }
         if(queue.z.p){
             obj.accel.z= -0.0005
