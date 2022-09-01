@@ -4,6 +4,7 @@ import {Button} from "./UI/Button.js"
 import {LevelSelectButton} from "./UI/LevelSelectButton.js";
 import {StartButton} from "./UI/StartButton.js";
 import {ScreenButton} from "./UI/ScreenButton.js";
+import {MainMenuButton} from "./UI/MainMenuButton.js";
 /*
 This is the Engine class of the SlingShot Engine. It loads up meshes from a Scene type object, and then computes
 the physics, reads player input and renders the scene.
@@ -111,6 +112,7 @@ export class Engine {
             width: 230,
             height: 50
         }, ui.canvas, ui.ctx, "Screens OFF", "Screens ON")
+        this.btnMain = new MainMenuButton("Quit", {coordinates: {x:100, y:25}, width:200, height:50}, ui.canvas, ui.ctx)
     }
 
     async generate_reflection() {
@@ -203,10 +205,12 @@ export class Engine {
                 this.btn.disable()
                 this.btn1.disable()
                 this.btn2.disable()
+                this.btnMain.enable()
             } else {
                 this.btn.enable()
                 this.btn1.enable()
                 this.btn2.enable()
+                this.btnMain.disable()
             }
         }
         // Update selected level id
@@ -266,11 +270,13 @@ export class Engine {
         }
         if (this.scene_curr.name !== "menu") {
             // UI control for level mode
+
             this.screen_enabled = localStorage.getItem("mirrors") === "true"
             if (this.advance_timer) {
                 this.curr_time = time - offset;
             }
             ui.clear()
+            this.btnMain.draw();
             ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 20}, this.scene_curr.name)
             ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((this.curr_time) / 1000).toFixed(3))
             if (!this.advance_timer) {
