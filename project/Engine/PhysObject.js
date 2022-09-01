@@ -22,7 +22,7 @@ export class PhysObject {
         // What kind of collider does this object have?
         this.collider = collider
         this.level_over = false;
-        this.rotation = {x:0, y:0}
+        this.rotation = {x: 0, y: 0}
         // Is this a screen?
         this.screen = screen === "true";
         if (!this.isActive)
@@ -43,7 +43,7 @@ export class PhysObject {
             if (check.coll) {
                 if (check.ramp) {
                     // Add fake gravity effect on slope
-                    this.accel.z = 0.0005
+                    this.accel.x = 0.0005
                     this.accel.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -52,8 +52,7 @@ export class PhysObject {
                 if (check.data.y.bottom && this.accel.y <= 0) {
                     this.accel.y = this.speed.y = 0
                 }
-                if(check.data.x.bottom)
-                {
+                if (check.data.x.bottom) {
                     this.accel.x = this.speed.x = this.speed.z = this.accel.z = 0
                 }
                 // Attrition calculation
@@ -82,17 +81,17 @@ export class PhysObject {
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
             let bounds = this.compute_bounds()
-            this.position.x = (bounds.max.x + bounds.min.x) / 2;
-            this.position.y = (bounds.max.y + bounds.min.y) / 2;
-            this.position.z = (bounds.max.z + bounds.min.z) / 2;
+            this.position.x = ((bounds.max.x + bounds.min.x) / 2);
+            this.position.y = ((bounds.max.y + bounds.min.y) / 2);
+            this.position.z = ((bounds.max.z + bounds.min.z) / 2);
             let i = 0;
             // Move model in 3d space
-            while (i < this.mesh.positions.length) {
-                this.mesh.positions[i] += this.speed.z;
-                this.mesh.positions[i + 1] += this.speed.x;
-                this.mesh.positions[i + 2] += this.speed.y;
-                i = i + 3;
-            }
+            // while (i < this.positions.length) {
+            //     this.positions[i] += this.speed.z;
+            //     this.positions[i + 1] += this.speed.x;
+            //     this.positions[i + 2] += this.speed.y;
+            //     i = i + 3;
+            // }
         }
     }
 
@@ -127,8 +126,8 @@ export class PhysObject {
                         if (res.min.y <= y_in_point) {
                             // If beyond limit Y of slope, put it on top of it.
                             let i = 0
-                            while (i < this.mesh.positions.length) {
-                                this.mesh.positions[i + 2] += y_in_point - res.min.y;
+                            while (i < this.positions.length) {
+                                this.positions[i + 2] += y_in_point - res.min.y;
                                 i = i + 3;
                             }
                             // Set flag to true
@@ -165,8 +164,8 @@ export class PhysObject {
                 if (colliders[obj].position.y > this.position.y) {
                     data.y.top = true;
                 }
-                if(colliders[obj].boundingBox.max.y > this.position.y){
-                    data.x.top = data.x.bottom = data.z.top = data.z.bottom=true;
+                if (colliders[obj].boundingBox.max.y > this.position.y) {
+                    data.x.top = data.x.bottom = data.z.top = data.z.bottom = true;
                     data.y.top = data.y.bottom = false;
                 }
             } else {
@@ -186,10 +185,26 @@ export class PhysObject {
         let ypos = []
         let zpos = []
         let i = 0;
-        while (i < this.mesh.positions.length) {
-            zpos.push(this.mesh.positions[i])
-            ypos.push(this.mesh.positions[i + 2])
-            xpos.push(this.mesh.positions[i + 1])
+        while (i < this.positions.length) {
+
+            if(this.isPlayer){
+                /*  This is needed. Why?
+                    As much as I would have liked to have the gpu perform this calculations, due to limitations
+                    in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
+                    as it would have massively improved performance, and since it's a workload that scales amazingly
+                    on a GPU. Luckily, this operation is performed just on 720 vertices (on the low-poly sphere, on the
+                    high-poly one it's around 2880) every frame, so it's not too bad.
+                    This is needed in order to have a precise collision system. If a collision system wasn't needed,
+                    I could have easily avoided this.
+                 */
+                this.positions[i]+=this.speed.x
+                this.positions[i + 2]+=this.speed.y
+                this.positions[i + 1]+=this.speed.z
+            }
+
+            zpos.push(this.positions[i])
+            ypos.push(this.positions[i + 2])
+            xpos.push(this.positions[i + 1])
             i = i + 3;
         }
         return {
@@ -228,11 +243,11 @@ export class PhysObject {
         // Enables the positionbuffer
         gl.enableVertexAttribArray(positionLocation);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-        const size = 3;          // 3 components per iteration
-        const type = gl.FLOAT;   // the data is 32bit floats
-        const normalize = false; // don't normalize the data
-        const stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-        const offset = 0;        // start at the beginning of the buffer
+        const size = 3;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
         // Sets up buffer attributes.
         gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
         // Enables the normal buffer
@@ -246,7 +261,7 @@ export class PhysObject {
         // Sets up the field of view
         let fieldOfViewRadians = degToRad(70);
 
-        // Calculates the aspect ration and computes the projection matrix
+        // Calculates the aspect ratio and computes the projection matrix
         let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         let zmin = 0.1;
         let projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zmin, 2000);
@@ -286,15 +301,20 @@ export class PhysObject {
         // Tell the shader to use texture unit 0 for diffuseMap
         gl.uniform1i(textureLocation, 0);
 
+        let translation = gl.getUniformLocation(program, "translation")
+        if (this.isPlayer) {
+            gl.uniform3f(translation, this.speed.x, this.speed.z, this.speed.y)
+        }
+
         function degToRad(d) {
             return d * Math.PI / 180;
         }
 
         let vertNumber = this.mesh.numVertices;
         // Call to drawScene
-        drawScene(this.mesh, this.screen, mirrorText, this.isPlayer, this.rotation)
+        drawScene(this.mesh, this.screen, mirrorText)
 
-        function drawScene(mesh, mirror, mirrorText, isPlayer, rotation) {
+        function drawScene(mesh, mirror, mirrorText) {
             // Draw the scene, using textures and binding them when's appropriate.
             if (mirror) {
                 gl.bindTexture(gl.TEXTURE_2D, mirrorText);

@@ -49,17 +49,17 @@ export class PlayerController{
             if(e instanceof TouchEvent){
                 e = e.changedTouches[0]
                 if(e.clientX>old.x){
-                    queue.x.p=true;
+                    queue.x.n=true;
                 }
                 else if(e.clientX<old.x){
-                    queue.x.n=true;
+                    queue.x.p=true;
                 }
                 else queue.x.n = queue.x.p=false
                 if(e.clientY<old.y){
-                    queue.z.p = true;
+                    queue.z.n = true;
                 }
                 else if(e.clientY>old.y){
-                    queue.z.n = true;
+                    queue.z.p = true;
                 }
                 else queue.z.p = queue.z.n = false
                 old.x = e.clientX;
@@ -67,17 +67,17 @@ export class PlayerController{
             }
             else{
                 if(e.movementX>0){
-                    queue.x.p=true;
+                    queue.x.n=true;
                 }
                 else if(e.movementX<0){
-                    queue.x.n=true;
+                    queue.x.p=true;
                 }
                 else queue.x.n = queue.x.p=false
                 if(e.movementY<0){
-                    queue.z.p = true;
+                    queue.z.n = true;
                 }
                 else if(e.movementY>0){
-                    queue.z.n = true;
+                    queue.z.p = true;
                 }
                 else queue.z.p = queue.z.n = false
             }
@@ -124,10 +124,10 @@ export class PlayerController{
     handler(){
         // Based on queue, applies acceleration to selected axis.
         if(queue.x.p){
-            obj.accel.x=0.0005
+            obj.accel.x=-0.0005
         }
         if(queue.x.n){
-            obj.accel.x= -0.0005
+            obj.accel.x= 0.0005
         }
         if(queue.z.p){
             obj.accel.z= -0.0005
