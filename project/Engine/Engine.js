@@ -262,11 +262,13 @@ export class Engine {
         // Finds the player
         let actor = this.find_actor()
         // Checks for user input
-        actor.pc.handler()
-        // Computes physics if necessary, ideally each 16 ms.
-        if (this.scene_curr.phys && !this.die && time - last_update > 16) {
-            actor.compute_phys(this.meshlist)
-            last_update = time
+        if(actor){
+            actor.pc.handler()
+            // Computes physics if necessary, ideally each 16 ms.
+            if (this.scene_curr.phys && !this.die && time - last_update > 16) {
+                actor.compute_phys(this.meshlist)
+                last_update = time
+            }
         }
         if (this.scene_curr.name !== "menu") {
             // UI control for level mode
@@ -359,10 +361,7 @@ export class Engine {
         if (!actor) {
             return [0, 0, 0]
         }
-        if (this.scene_curr.name !== "menu") {
-            return [actor.mesh.positions[0], actor.mesh.positions[1], actor.mesh.positions[2]]
-        }
-        return [actor.position.x, actor.position.z, actor.position.y]
+        return [actor.position.z, actor.position.x, actor.position.y]
     }
 
 

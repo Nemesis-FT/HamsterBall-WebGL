@@ -88,9 +88,9 @@ export class PhysObject {
             let i = 0;
             // Move model in 3d space
             while (i < this.mesh.positions.length) {
-                this.mesh.positions[i] += parseFloat(this.speed.z);
-                this.mesh.positions[i + 1] += parseFloat(this.speed.x);
-                this.mesh.positions[i + 2] += parseFloat(this.speed.y);
+                this.mesh.positions[i] += this.speed.z;
+                this.mesh.positions[i + 1] += this.speed.x;
+                this.mesh.positions[i + 2] += this.speed.y;
                 i = i + 3;
             }
         }
@@ -310,10 +310,6 @@ export class PhysObject {
             gl.enable(gl.DEPTH_TEST);
 
             let matrix = m4.identity();
-            if(isPlayer){
-                matrix = m4.xRotate(matrix, rotation.x)
-                matrix = m4.yRotate(matrix, rotation.y)
-            }
 
             gl.uniformMatrix4fv(matrixLocation, false, matrix);
             // Draw arrays contents on the canvas.
