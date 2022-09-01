@@ -42,10 +42,6 @@ export class Engine {
         window.addEventListener('loadlevel_pre', async (e) => {
             this.die = true
             this.nextlevel = e.detail.scene
-            ui.draw('14pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: this.gl.canvas.height / 2 + 150
-            }, "Now loading level...")
         })
         window.addEventListener('level_complete', async (e) => {
             this.advance_timer = false;
@@ -209,20 +205,19 @@ export class Engine {
 
         // Puts an offset to time in order to ensure that it starts at 0 when level is fully loaded.
         if(this.time_reset){
-            if (this.scene_curr.name !== "menu") {
-                console.debug("Not on main menu")
-                this.btn.disable()
-                this.btn1.disable()
-                this.btn2.disable()
-                this.btnMain.enable()
-            } else {
-                this.btn.enable()
-                this.btn1.enable()
-                this.btn2.enable()
-                this.btnMain.disable()
-            }
-            console.debug(time)
             if(time!==0){
+                if (this.scene_curr.name !== "menu") {
+                    console.debug("Not on main menu")
+                    this.btn.disable()
+                    this.btn1.disable()
+                    this.btn2.disable()
+                    this.btnMain.enable()
+                } else {
+                    this.btn.enable()
+                    this.btn1.enable()
+                    this.btn2.enable()
+                    this.btnMain.disable()
+                }
                 this.time_reset = false
                 this.time_offset = time
             }
@@ -342,6 +337,7 @@ export class Engine {
             window.dispatchEvent(new CustomEvent('loadlevel', {detail: {scene: this.nextlevel}}))
             this.meshlist = []
             this.curr_time = -1
+            this.btn1.enabled = this.btn2.enabled = this.btn.enabled = this.btnMain.enabled = false
             window.cancelAnimationFrame(this.animId)
         }
 

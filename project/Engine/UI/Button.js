@@ -12,14 +12,12 @@ export class Button {
         this.canvas.addEventListener("click", this.handle)
         this.canvas.addEventListener("touchstart", this.handle)
         this.enabled = true;
-        console.debug("Button "+this.text+" enabled")
     }
 
     disable() {
         this.canvas.removeEventListener("click", this.handle)
         this.canvas.removeEventListener("touchstart", this.handle)
         this.enabled = false;
-        console.debug("Button "+this.text+" disabled")
     }
 
     draw() {
