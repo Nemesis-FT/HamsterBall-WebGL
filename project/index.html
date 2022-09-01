@@ -106,6 +106,7 @@
   uniform mat4 u_view;
   // Camera position
   uniform vec3 u_viewWorldPosition;
+  uniform vec3 translation;
 
   // Fragment shader varyings
   varying vec3 v_normal;
@@ -113,8 +114,9 @@
   varying vec2 v_texcoord;
 
   void main() {
-
-    gl_Position = u_projection * u_view * vec4(a_position,1);
+    // Compute the position by multiplying the projection matrix with the view matrix and the vector that's the vertex
+    // position + the translation (in this case, the object speed in 3D space.
+    gl_Position = u_projection * u_view * vec4(a_position+translation,1);
     v_surfaceToView = u_viewWorldPosition - vec4(a_position,1).xyz;
     v_normal = a_normal;
     v_texcoord = a_texcoord;
