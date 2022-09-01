@@ -12,8 +12,8 @@ the physics, reads player input and renders the scene.
 // Common data among engine instances.
 let ui;
 // Edit this to add more levels. json files must be placed under the "Models" folder with their meshes.
-let levels = ["level1.json", "level2.json"]
-let levelNames = ["Standard Race", "Ramp Race"]
+let levels = ["level1.json", "level2.json", "level3.json"]
+let levelNames = ["Standard Race", "Ramp Race", "Narrow Race"]
 let offset = 0;
 let last_update = 0;
 let old_image = null;
@@ -49,7 +49,7 @@ export class Engine {
             this.advance_timer = false;
             let time = this.curr_time - this.time_offset
             // Safety countermeasure.
-            if (time === 0) {
+            if (time <= 0) {
                 return;
             }
             ui.draw('18pt Calibri', "black", {

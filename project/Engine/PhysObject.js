@@ -22,6 +22,7 @@ export class PhysObject {
         // What kind of collider does this object have?
         this.collider = collider
         this.level_over = false;
+        this.rotation = {x:0, y:0}
         // Is this a screen?
         this.screen = screen === "true";
         if (!this.isActive)
@@ -291,9 +292,9 @@ export class PhysObject {
 
         let vertNumber = this.mesh.numVertices;
         // Call to drawScene
-        drawScene(this.mesh, this.screen, mirrorText, mirror_mode)
+        drawScene(this.mesh, this.screen, mirrorText, this.isPlayer, this.rotation)
 
-        function drawScene(mesh, mirror, mirrorText) {
+        function drawScene(mesh, mirror, mirrorText, isPlayer, rotation) {
             // Draw the scene, using textures and binding them when's appropriate.
             if (mirror) {
                 gl.bindTexture(gl.TEXTURE_2D, mirrorText);
@@ -309,6 +310,10 @@ export class PhysObject {
             gl.enable(gl.DEPTH_TEST);
 
             let matrix = m4.identity();
+            if(isPlayer){
+                matrix = m4.xRotate(matrix, rotation.x)
+                matrix = m4.yRotate(matrix, rotation.y)
+            }
 
             gl.uniformMatrix4fv(matrixLocation, false, matrix);
             // Draw arrays contents on the canvas.
