@@ -180,21 +180,28 @@ export class PhysObject {
     }
 
     compute_bounds() {
-        //if (this.isPlayer) {
-        //    return {
-        //        max: {x: this.position.x + 1, y: this.position.y + 1, z: this.position.z + 1},
-        //        min: {x: this.position.x - 1, y: this.position.y - 1, z: this.position.z - 1}
-        //    }
-        //}
         // Function that computes the bounds of an object.
         let xpos = []
         let ypos = []
         let zpos = []
         let i = 0;
         while (i < this.positions.length) {
-            this.positions[i]+=this.speed.x
-            this.positions[i + 2]+=this.speed.y
-            this.positions[i + 1]+=this.speed.z
+
+            if(this.isPlayer){
+                /*  This is needed. Why?
+                    As much as I would have liked to have the gpu perform this calculations, due to limitations
+                    in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
+                    as it would have massively improved performance, and since it's a workload that scales amazingly
+                    on a GPU. Luckily, this operation is performed just on 720 vertices (on the low-poly sphere, on the
+                    high-poly one it's around 2880) every frame, so it's not too bad.
+                    This is needed in order to have a precise collision system. If a collision system wasn't needed,
+                    I could have easily avoided this.
+                 */
+                this.positions[i]+=this.speed.x
+                this.positions[i + 2]+=this.speed.y
+                this.positions[i + 1]+=this.speed.z
+            }
+
             zpos.push(this.positions[i])
             ypos.push(this.positions[i + 2])
             xpos.push(this.positions[i + 1])
