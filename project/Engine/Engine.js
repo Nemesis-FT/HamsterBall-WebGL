@@ -36,6 +36,7 @@ export class Engine {
         this.die = false;
         this.nextlevel = "";
         this.advance_timer = true;
+        this.time_reset = false
         // A bunch of custom event listeners. loadlevel-pre prepares loadup of a new scene, while level_complete stops
         // the timer and then puts the player back to menu, while updating high scores.
         window.addEventListener('loadlevel_pre', async (e) => {
@@ -188,12 +189,17 @@ export class Engine {
         // Sets internal and current scene as the ones that are provided.
         this.scene = scene;
         this.scene_curr = scene;
+        ui.draw('14pt Calibri', "red", {
+            x: this.gl.canvas.width / 2,
+            y: this.gl.canvas.height / 2 + 150
+        }, "Now loading level... Please wait.")
         console.debug(" Loading scene...")
         for (const obj of scene.objs) {
             // Loads up the meshes using the MeshLoader object.
             await this.loader.load(obj.path, this.gl, this.screen_gl, obj.player, obj.active, obj.coords, obj.alias, obj.collider, obj.screen)
         }
         console.debug(" Scene loaded.")
+        this.time_reset = true
     }
 
     render = async (time = 0) => {
@@ -211,6 +217,15 @@ export class Engine {
                 this.btn1.enable()
                 this.btn2.enable()
                 this.btnMain.disable()
+            }
+        }
+        // Puts an offset to time in order to ensure that it starts at 0 when level is fully loaded.
+        if(this.time_reset){
+            console.debug(time)
+            if(time!==0){
+                console.debug(time)
+                this.time_reset = false
+                this.time_offset = time
             }
         }
         // Update selected level id
@@ -275,7 +290,7 @@ export class Engine {
 
             this.screen_enabled = localStorage.getItem("mirrors") === "true"
             if (this.advance_timer) {
-                this.curr_time = time - offset;
+                this.curr_time = time - this.time_offset;
             }
             ui.clear()
             this.btnMain.draw();
