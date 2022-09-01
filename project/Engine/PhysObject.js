@@ -43,7 +43,7 @@ export class PhysObject {
             if (check.coll) {
                 if (check.ramp) {
                     // Add fake gravity effect on slope
-                    this.accel.z = 0.0005
+                    this.accel.x = 0.0005
                     this.accel.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -81,9 +81,9 @@ export class PhysObject {
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
             let bounds = this.compute_bounds()
-            this.position.x = ((bounds.max.x + bounds.min.x) / 2) + this.speed.x;
-            this.position.y = ((bounds.max.y + bounds.min.y) / 2) + this.speed.y;
-            this.position.z = ((bounds.max.z + bounds.min.z) / 2) + this.speed.z;
+            this.position.x = ((bounds.max.x + bounds.min.x) / 2);
+            this.position.y = ((bounds.max.y + bounds.min.y) / 2);
+            this.position.z = ((bounds.max.z + bounds.min.z) / 2);
             let i = 0;
             // Move model in 3d space
             // while (i < this.positions.length) {
@@ -180,21 +180,21 @@ export class PhysObject {
     }
 
     compute_bounds() {
-        if (this.isPlayer) {
-            return {
-                max: {x: this.position.x + 1, y: this.position.y + 1, z: this.position.z + 1},
-                min: {x: this.position.x - 1, y: this.position.y - 1, z: this.position.z - 1}
-            }
-        }
+        //if (this.isPlayer) {
+        //    return {
+        //        max: {x: this.position.x + 1, y: this.position.y + 1, z: this.position.z + 1},
+        //        min: {x: this.position.x - 1, y: this.position.y - 1, z: this.position.z - 1}
+        //    }
+        //}
         // Function that computes the bounds of an object.
         let xpos = []
         let ypos = []
         let zpos = []
         let i = 0;
         while (i < this.positions.length) {
-            //this.positions[i]+=this.speed.x
-            //this.positions[i + 2]+=this.speed.y
-            //this.positions[i + 1]+=this.speed.z
+            this.positions[i]+=this.speed.x
+            this.positions[i + 2]+=this.speed.y
+            this.positions[i + 1]+=this.speed.z
             zpos.push(this.positions[i])
             ypos.push(this.positions[i + 2])
             xpos.push(this.positions[i + 1])
@@ -296,7 +296,7 @@ export class PhysObject {
 
         let translation = gl.getUniformLocation(program, "translation")
         if (this.isPlayer) {
-            gl.uniform3f(translation, this.position.x + this.speed.x, this.position.z + this.speed.z, this.position.x + this.speed.y)
+            gl.uniform3f(translation, this.speed.x, this.speed.z, this.speed.y)
         }
 
         function degToRad(d) {
@@ -305,9 +305,9 @@ export class PhysObject {
 
         let vertNumber = this.mesh.numVertices;
         // Call to drawScene
-        drawScene(this.mesh, this.screen, mirrorText, this.isPlayer, this.rotation)
+        drawScene(this.mesh, this.screen, mirrorText)
 
-        function drawScene(mesh, mirror, mirrorText, isPlayer, rotation) {
+        function drawScene(mesh, mirror, mirrorText) {
             // Draw the scene, using textures and binding them when's appropriate.
             if (mirror) {
                 gl.bindTexture(gl.TEXTURE_2D, mirrorText);
