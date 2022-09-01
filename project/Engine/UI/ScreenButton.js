@@ -11,7 +11,7 @@ export class ScreenButton extends Button{
 
 
     handle = e =>{
-        if(super.collision(super.normalize(e))){
+        if(super.collision(super.normalize(e))&& this.enabled){
             this.value=!this.value
             if(this.value){
                 this.text=this.textOn

@@ -206,8 +206,11 @@ export class Engine {
         /*
         This method is called as frequently as possible using the requestAnimationFrame function.
          */
-        if (time === 0) {
+
+        // Puts an offset to time in order to ensure that it starts at 0 when level is fully loaded.
+        if(this.time_reset){
             if (this.scene_curr.name !== "menu") {
+                console.debug("Not on main menu")
                 this.btn.disable()
                 this.btn1.disable()
                 this.btn2.disable()
@@ -218,12 +221,8 @@ export class Engine {
                 this.btn2.enable()
                 this.btnMain.disable()
             }
-        }
-        // Puts an offset to time in order to ensure that it starts at 0 when level is fully loaded.
-        if(this.time_reset){
             console.debug(time)
             if(time!==0){
-                console.debug(time)
                 this.time_reset = false
                 this.time_offset = time
             }
@@ -272,7 +271,55 @@ export class Engine {
                     colorLight: [1.0, 1.0, 1.0]
                 }, program, camera_coords, reflection);
             })
+            if (this.scene_curr.name !== "menu") {
+                // UI control for level mode
 
+                this.screen_enabled = localStorage.getItem("mirrors") === "true"
+                if (this.advance_timer) {
+                    this.curr_time = time - this.time_offset;
+                }
+                ui.clear()
+                this.btnMain.draw();
+                ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 20}, this.scene_curr.name)
+                ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((this.curr_time) / 1000).toFixed(3))
+                if (!this.advance_timer) {
+                    ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
+                }
+            } else {
+                // Ui control for main menu.
+                localStorage.setItem("level", levels[this.btn1.levelId])
+                this.screen_enabled = this.btn2.value;
+                if (this.screen_enabled) {
+                    localStorage.setItem("mirrors", "true")
+                } else {
+                    localStorage.setItem("mirrors", "false")
+                }
+                ui.clear()
+                this.btn.draw()
+                this.btn1.draw()
+                this.btn2.draw()
+                offset = time
+                ui.draw('14pt Calibri', "black", {
+                    x: this.gl.canvas.width / 2,
+                    y: this.gl.canvas.height / 2 - 30
+                }, "Click on the button below to choose a level, then click on start.")
+                let best = localStorage.getItem(levels[this.btn1.levelId])
+                if (best) {
+                    ui.draw('14pt Calibri', "black", {
+                        x: this.gl.canvas.width / 2,
+                        y: this.gl.canvas.height / 2 + 120
+                    }, "Your best time is " + (best / 1000).toFixed(3) + "s")
+                }
+
+                ui.draw('14pt Calibri', "black", {
+                    x: this.gl.canvas.width / 2,
+                    y: this.gl.canvas.height - 30
+                }, "Powered by SlingShot Engine, developed by Lorenzo Balugani.")
+                ui.draw('14pt Calibri', "black", {
+                    x: this.gl.canvas.width / 2,
+                    y: this.gl.canvas.height - 15
+                }, "This is not a commercial product. The hamsterball trademark is property of Raptisoft.")
+            }
         }
         // Finds the player
         let actor = this.find_actor()
@@ -285,55 +332,7 @@ export class Engine {
                 last_update = time
             }
         }
-        if (this.scene_curr.name !== "menu") {
-            // UI control for level mode
 
-            this.screen_enabled = localStorage.getItem("mirrors") === "true"
-            if (this.advance_timer) {
-                this.curr_time = time - this.time_offset;
-            }
-            ui.clear()
-            this.btnMain.draw();
-            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 20}, this.scene_curr.name)
-            ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((this.curr_time) / 1000).toFixed(3))
-            if (!this.advance_timer) {
-                ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
-            }
-        } else {
-            // Ui control for main menu.
-            localStorage.setItem("level", levels[this.btn1.levelId])
-            this.screen_enabled = this.btn2.value;
-            if (this.screen_enabled) {
-                localStorage.setItem("mirrors", "true")
-            } else {
-                localStorage.setItem("mirrors", "false")
-            }
-            ui.clear()
-            this.btn.draw()
-            this.btn1.draw()
-            this.btn2.draw()
-            offset = time
-            ui.draw('14pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: this.gl.canvas.height / 2 - 30
-            }, "Click on the button below to choose a level, then click on start.")
-            let best = localStorage.getItem(levels[this.btn1.levelId])
-            if (best) {
-                ui.draw('14pt Calibri', "black", {
-                    x: this.gl.canvas.width / 2,
-                    y: this.gl.canvas.height / 2 + 120
-                }, "Your best time is " + (best / 1000).toFixed(3) + "s")
-            }
-
-            ui.draw('14pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: this.gl.canvas.height - 30
-            }, "Powered by SlingShot Engine, developed by Lorenzo Balugani.")
-            ui.draw('14pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: this.gl.canvas.height - 15
-            }, "This is not a commercial product. The hamsterball trademark is property of Raptisoft.")
-        }
         if (!this.die) {
             // Queues up for next frame
             this.animId = window.requestAnimationFrame(this.render)

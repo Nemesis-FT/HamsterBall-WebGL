@@ -10,7 +10,8 @@ export class StartButton extends Button{
 
 
     handle = e =>{
-        if(super.collision(super.normalize(e))){
+        if(super.collision(super.normalize(e)) && this.enabled){
+            console.debug(this.enabled)
             let scene = "Menu.json";
             window.dispatchEvent(new CustomEvent('loadlevel', { detail:{scene: this.levels[this.levelId]}}))
         }

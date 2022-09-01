@@ -7,7 +7,7 @@ export class MainMenuButton extends Button{
 
 
     handle = e =>{
-        if(super.collision(super.normalize(e))){
+        if(super.collision(super.normalize(e))&& this.enabled){
             setTimeout(function () {
                 window.location.reload();
             }, 1)

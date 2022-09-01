@@ -189,7 +189,7 @@ export class PhysObject {
 
             if(this.isPlayer){
                 /*  This is needed. Why?
-                    As much as I would have liked to have the gpu perform this calculations, due to limitations
+                    As much as I would have liked to have the gpu perform these calculations, due to limitations
                     in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
                     as it would have massively improved performance, and since it's a workload that scales amazingly
                     on a GPU. Luckily, this operation is performed just on 720 vertices (on the low-poly sphere, on the
