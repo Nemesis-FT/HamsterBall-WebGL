@@ -85,6 +85,7 @@ export class PhysObject {
             this.position.y = ((bounds.max.y + bounds.min.y) / 2);
             this.position.z = ((bounds.max.z + bounds.min.z) / 2);
             let i = 0;
+            this.compute_new_position()
             // Move model in 3d space
             // while (i < this.positions.length) {
             //     this.positions[i] += this.speed.z;
@@ -187,7 +188,7 @@ export class PhysObject {
         let i = 0;
         while (i < this.positions.length) {
 
-            if(this.isPlayer){
+            if(this.isPlayer) {
                 /*  This is needed. Why?
                     As much as I would have liked to have the gpu perform these calculations, due to limitations
                     in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
@@ -197,11 +198,10 @@ export class PhysObject {
                     This is needed in order to have a precise collision system. If a collision system wasn't needed,
                     I could have easily avoided this.
                  */
-                this.positions[i]+=this.speed.x
-                this.positions[i + 2]+=this.speed.y
-                this.positions[i + 1]+=this.speed.z
+                this.positions[i] += this.speed.x
+                this.positions[i + 2] += this.speed.y
+                this.positions[i + 1] += this.speed.z
             }
-
             zpos.push(this.positions[i])
             ypos.push(this.positions[i + 2])
             xpos.push(this.positions[i + 1])
@@ -211,6 +211,42 @@ export class PhysObject {
             max: {x: Math.max(...xpos), y: Math.max(...ypos), z: Math.max(...zpos)},
             min: {x: Math.min(...xpos), y: Math.min(...ypos), z: Math.min(...zpos)}
         }
+    }
+
+
+    compute_new_position() {
+        const rotMatX = m4.xRotation(this.speed.x);
+        const rotMatY = m4.yRotation(this.speed.z);
+        const rotMatZ = m4.zRotation(this.speed.z*-1);
+        const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
+
+        for (let i = 0; i < this.mesh.positions.length; i += 3) {
+            var pos = [];
+            var nor = [];
+
+            pos.push(this.mesh.positions[i + 1] - this.position.x);
+            pos.push(this.mesh.positions[i + 2] - 1 - this.position.y);
+            pos.push(this.mesh.positions[i] - this.position.z);
+            nor.push(this.mesh.normals[i + 1]);
+            nor.push(this.mesh.normals[i + 2]);
+            nor.push(this.mesh.normals[i]);
+
+            var res = m4.transformPoint(rotMat, pos);
+            let nor_r = m4.transformPoint(rotMat, nor);
+
+            this.mesh.positions[i + 1] = res[0] + this.position.x;
+            this.mesh.positions[i + 2] = res[1] + 1 + this.position.y;
+            this.mesh.positions[i] = res[2] + this.position.z;
+            this.mesh.normals[i + 1] = nor_r[0];
+            this.mesh.normals[i + 2] = nor_r[1];
+            this.mesh.normals[i] = nor_r[2];
+        }
+
+        //for (let i = 0; i < this.mesh.positions.length; i += 3) {
+        //    //this.mesh.positions[i];
+        //    //this.mesh.positions[i + 1];
+        //    this.mesh.positions[i + 2] += delta.y;
+        //}
     }
 
 
@@ -226,6 +262,10 @@ export class PhysObject {
         // Binds and creates the normals buffer for this object.
         this.normalsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer);
+        if(this.isPlayer){
+            console.debug(this.mesh.normals)
+        }
+
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.normals), gl.STATIC_DRAW);
         // Binds and creates the texture coordinates buffer for this object.
         this.texcoordBuffer = gl.createBuffer();
@@ -291,9 +331,20 @@ export class PhysObject {
 
         gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
         gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-
         // Sets light position
-        gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-1, 3, 5]));
+        if(this.isPlayer){
+            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([tar[0],tar[1],tar[2]]));
+        }
+        else{
+            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-1, 3, 5]));
+        }
+
+        const rotMatX = m4.xRotation(this.speed.x);
+        const rotMatY = m4.yRotation(this.speed.z);
+        const rotMatZ = m4.zRotation(this.speed.z*-1);
+        const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, rotMat)
+
 
         // Sets the camera position
         gl.uniform3fv(viewWorldPositionLocation, cameraPosition);
