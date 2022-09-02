@@ -104,10 +104,10 @@ export class PlayerController{
 
     keyDown(e){
         // Basic key press handling
-        if(e.keyCode === 87) queue.x.p=true;
-        if(e.keyCode === 83) queue.x.n=true;
-        if(e.keyCode === 65) queue.z.p=true; // a
-        if(e.keyCode === 68) queue.z.n=true; // d
+        if(e.keyCode === 65) queue.x.p=true;
+        if(e.keyCode === 68) queue.x.n=true;
+        if(e.keyCode === 87) queue.z.p=true; // a
+        if(e.keyCode === 83) queue.z.n=true; // d
         if(e.keyCode === 27) {setTimeout(function(){
             window.location.reload();
         })}
@@ -115,10 +115,10 @@ export class PlayerController{
 
     keyUp(e){
         // Basic key lift handling
-        if(e.keyCode === 87) queue.x.p=false;
-        if(e.keyCode === 83) queue.x.n=false;
-        if(e.keyCode === 65) queue.z.p=false;
-        if(e.keyCode === 68) queue.z.n=false;
+        if(e.keyCode === 65) queue.x.p=false;
+        if(e.keyCode === 68) queue.x.n=false;
+        if(e.keyCode === 87) queue.z.p=false; // a
+        if(e.keyCode === 83) queue.z.n=false;
     }
 
     handler(){

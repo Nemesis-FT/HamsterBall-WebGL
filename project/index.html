@@ -108,21 +108,26 @@
   uniform vec3 u_viewWorldPosition;
   // Translation vector
   uniform vec3 translation;
+  uniform vec3 offsets;
   uniform mat4 u_normalMatrix;
 
   // Fragment shader varyings
   varying vec3 v_normal;
   varying vec4 test;
+  varying vec4 rot_pos;
+  varying vec4 tmp;
   varying vec3 v_surfaceToView;
   varying vec2 v_texcoord;
 
   void main() {
     // Compute the position by multiplying the projection matrix with the view matrix and the vector that's the vertex
-    // position + the translation (in this case, the object speed in 3D space.
-    gl_Position = u_projection * u_view * vec4(a_position+translation,1);
+    // position + the translation of the object.
+    rot_pos = vec4(a_position-offsets,1);
+    tmp = u_normalMatrix*rot_pos;
+    gl_Position = u_projection * u_view * vec4(tmp.xyz+offsets+translation,1.);
     v_surfaceToView = u_viewWorldPosition - vec4(a_position,1).xyz;
-    //test = u_normalMatrix*vec4(a_normal,1);
-    v_normal = a_normal;
+    test = u_normalMatrix*vec4(a_normal,1);
+    v_normal = test.xyz;
     v_texcoord = a_texcoord;
   }
 </script>
