@@ -90,7 +90,7 @@ export class PhysObject {
             this.translation.y += this.speed.y;
             this.translation.z += this.speed.z;
             let i = 0;
-            // this.compute_new_position()
+            //this.compute_new_position()
             // Move model in 3d space
             // while (i < this.positions.length) {
             //     this.positions[i] += this.speed.z;
@@ -227,30 +227,22 @@ export class PhysObject {
 
     compute_new_position() {
         const rotMatX = m4.xRotation(this.speed.x);
-        const rotMatY = m4.yRotation(this.speed.z);
+        const rotMatY = m4.yRotation(this.speed.y);
         const rotMatZ = m4.zRotation(this.speed.z * -1);
         const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
 
         for (let i = 0; i < this.mesh.positions.length; i += 3) {
             var pos = [];
-            var nor = [];
 
             pos.push(this.mesh.positions[i + 1] - this.position.x);
             pos.push(this.mesh.positions[i + 2] - 1 - this.position.y);
             pos.push(this.mesh.positions[i] - this.position.z);
-            nor.push(this.mesh.normals[i + 1]);
-            nor.push(this.mesh.normals[i + 2]);
-            nor.push(this.mesh.normals[i]);
 
             var res = m4.transformPoint(rotMat, pos);
-            let nor_r = m4.transformPoint(rotMat, nor);
 
             this.mesh.positions[i + 1] = res[0] + this.position.x;
             this.mesh.positions[i + 2] = res[1] + 1 + this.position.y;
             this.mesh.positions[i] = res[2] + this.position.z;
-            this.mesh.normals[i + 1] = nor_r[0];
-            this.mesh.normals[i + 2] = nor_r[1];
-            this.mesh.normals[i] = nor_r[2];
         }
 
         //for (let i = 0; i < this.mesh.positions.length; i += 3) {
@@ -350,8 +342,13 @@ export class PhysObject {
         const rotMatZ = m4.zRotation(this.translation.z * -1);
         const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, rotMat)
+        if(this.isPlayer){
+            gl.uniform3fv(gl.getUniformLocation(program, "offsets"), [this.offsets.x, this.offsets.z, this.offsets.y])
+        }
+        else{
+            gl.uniform3fv(gl.getUniformLocation(program, "offsets"), [0, 0, 0])
+        }
 
-        gl.uniformMatrix3fv(gl.getUniformLocation(program, "offsets"))
 
 
         // Sets the camera position
