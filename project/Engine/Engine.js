@@ -19,10 +19,6 @@ let offset = 0;
 let last_update = 0;
 let old_image = null;
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
-
 export class Engine {
     constructor(id) {
         // Constructor for the engine. It initializes everything it needs and obtains the webgl context.
@@ -63,9 +59,9 @@ export class Engine {
                 localStorage.setItem(s, "" + time)
                 console.debug(localStorage.getItem(s))
             }
-            delay(5000).then(setTimeout(function () {
+            setTimeout(function () {
                 window.location.reload();
-            }, 1000));
+            }, 1000);
 
         })
         this.gl = this.canvas.getContext("webgl", {antialias: true});
