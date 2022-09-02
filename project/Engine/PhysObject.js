@@ -16,7 +16,9 @@ export class PhysObject {
         this.speed = {x: 0.0, y: 0.0, z: 0.0};
         this.accel = {x: 0.0, y: 0.0, z: 0.0};
         this.position = {x: offsets.x, y: offsets.y, z: offsets.z}
+        this.offsets = offsets
         this.positions = this.mesh.positions
+        this.translation = {x:0, y:0, z:0}
         // Is this a player-controllable object (an actor)?
         this.isPlayer = isPlayer === "true";
         // What kind of collider does this object have?
@@ -43,7 +45,7 @@ export class PhysObject {
             if (check.coll) {
                 if (check.ramp) {
                     // Add fake gravity effect on slope
-                    this.accel.x = 0.0005
+                    this.accel.z = 0.0005
                     this.accel.y = 0;
                 }
                 if (check.data.y.top && this.accel.y >= 0) {
@@ -81,11 +83,14 @@ export class PhysObject {
             this.speed.y += this.accel.y;
             this.speed.z += this.accel.z;
             let bounds = this.compute_bounds()
-            this.position.x = ((bounds.max.x + bounds.min.x) / 2);
-            this.position.y = ((bounds.max.y + bounds.min.y) / 2);
-            this.position.z = ((bounds.max.z + bounds.min.z) / 2);
+            this.position.x = ((bounds.max.x + bounds.min.x) / 2) + this.speed.x;
+            this.position.y = ((bounds.max.y + bounds.min.y) / 2) + this.speed.y;
+            this.position.z = ((bounds.max.z + bounds.min.z) / 2) + this.speed.z;
+            this.translation.x += this.speed.x;
+            this.translation.y += this.speed.y;
+            this.translation.z += this.speed.z;
             let i = 0;
-            this.compute_new_position()
+            // this.compute_new_position()
             // Move model in 3d space
             // while (i < this.positions.length) {
             //     this.positions[i] += this.speed.z;
@@ -102,20 +107,23 @@ export class PhysObject {
         let coll = false
         let colliders = [];
         let ramp = false;
+        //console.debug(this.position, res)
         for (const obj in physobjs) {
             let target
             // Lookup or compute object bounds
             if (physobjs[obj].isPlayer) {
                 target = physobjs[obj].compute_bounds()
+
             } else {
                 target = physobjs[obj].boundingBox;
             }
             // If the object is active and is not the current object
             if (physobjs[obj].alias !== this.alias && this.isActive) {
                 // If its within the correct bounds and is not a skybox or a deathplane...
+
                 if ((res.min.x <= target.max.x && res.max.x >= target.min.x) &&
                     (res.min.y <= target.max.y && res.max.y >= target.min.y) &&
-                    (res.min.z <= target.max.z && res.max.z >= target.min.z) && physobjs[obj].collider !== "skybox" && physobjs[obj].collider !== "death") {
+                    (res.min.z <= target.max.z && res.max.z >= target.min.z)) {
                     // Add object to collider list
                     colliders.push(physobjs[obj])
                     // Set flag to true
@@ -126,11 +134,8 @@ export class PhysObject {
                         let y_in_point = angular * res.min.z + target.max.y + 0.5;
                         if (res.min.y <= y_in_point) {
                             // If beyond limit Y of slope, put it on top of it.
-                            let i = 0
-                            while (i < this.positions.length) {
-                                this.positions[i + 2] += y_in_point - res.min.y;
-                                i = i + 3;
-                            }
+                            this.translation.y += y_in_point - res.min.y;
+                            this.position.y += y_in_point -res.min.y;
                             // Set flag to true
                             ramp = true;
                         } else {
@@ -182,26 +187,32 @@ export class PhysObject {
 
     compute_bounds() {
         // Function that computes the bounds of an object.
+        if (this.isPlayer) {
+            return {
+                max: {x: this.position.x+1, y: this.position.y+1, z: this.position.z+1},
+                min: {x: this.position.x-1, y: this.position.y-1, z: this.position.z-1}
+            }
+        }
         let xpos = []
         let ypos = []
         let zpos = []
         let i = 0;
         while (i < this.positions.length) {
 
-            if(this.isPlayer) {
-                /*  This is needed. Why?
-                    As much as I would have liked to have the gpu perform these calculations, due to limitations
-                    in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
-                    as it would have massively improved performance, and since it's a workload that scales amazingly
-                    on a GPU. Luckily, this operation is performed just on 720 vertices (on the low-poly sphere, on the
-                    high-poly one it's around 2880) every frame, so it's not too bad.
-                    This is needed in order to have a precise collision system. If a collision system wasn't needed,
-                    I could have easily avoided this.
-                 */
-                this.positions[i] += this.speed.x
-                this.positions[i + 2] += this.speed.y
-                this.positions[i + 1] += this.speed.z
-            }
+            //if (this.isPlayer) {
+            //    /*  This is needed. Why?
+            //        As much as I would have liked to have the gpu perform these calculations, due to limitations
+            //        in the webgl library I can't seem to find a way to "look" at the computed data. This is a shame,
+            //        as it would have massively improved performance, and since it's a workload that scales amazingly
+            //        on a GPU. Luckily, this operation is performed just on 720 vertices (on the low-poly sphere, on the
+            //        high-poly one it's around 2880) every frame, so it's not too bad.
+            //        This is needed in order to have a precise collision system. If a collision system wasn't needed,
+            //        I could have easily avoided this.
+            //     */
+            //    this.positions[i] += this.speed.x
+            //    this.positions[i + 2] += this.speed.y
+            //    this.positions[i + 1] += this.speed.z
+            //}
             zpos.push(this.positions[i])
             ypos.push(this.positions[i + 2])
             xpos.push(this.positions[i + 1])
@@ -217,7 +228,7 @@ export class PhysObject {
     compute_new_position() {
         const rotMatX = m4.xRotation(this.speed.x);
         const rotMatY = m4.yRotation(this.speed.z);
-        const rotMatZ = m4.zRotation(this.speed.z*-1);
+        const rotMatZ = m4.zRotation(this.speed.z * -1);
         const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
 
         for (let i = 0; i < this.mesh.positions.length; i += 3) {
@@ -262,10 +273,6 @@ export class PhysObject {
         // Binds and creates the normals buffer for this object.
         this.normalsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalsBuffer);
-        if(this.isPlayer){
-            console.debug(this.mesh.normals)
-        }
-
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.normals), gl.STATIC_DRAW);
         // Binds and creates the texture coordinates buffer for this object.
         this.texcoordBuffer = gl.createBuffer();
@@ -332,18 +339,19 @@ export class PhysObject {
         gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
         gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
         // Sets light position
-        if(this.isPlayer){
-            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([tar[0],tar[1],tar[2]]));
-        }
-        else{
+        if (this.isPlayer) {
+            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([tar[0], tar[1], tar[2]]));
+        } else {
             gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-1, 3, 5]));
         }
 
-        const rotMatX = m4.xRotation(this.speed.x);
-        const rotMatY = m4.yRotation(this.speed.z);
-        const rotMatZ = m4.zRotation(this.speed.z*-1);
+        const rotMatX = m4.xRotation(this.translation.x);
+        const rotMatY = m4.yRotation(this.translation.y);
+        const rotMatZ = m4.zRotation(this.translation.z * -1);
         const rotMat = m4.multiply(m4.multiply(rotMatX, rotMatY), rotMatZ);
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, rotMat)
+
+        gl.uniformMatrix3fv(gl.getUniformLocation(program, "offsets"))
 
 
         // Sets the camera position
@@ -354,7 +362,10 @@ export class PhysObject {
 
         let translation = gl.getUniformLocation(program, "translation")
         if (this.isPlayer) {
-            gl.uniform3f(translation, this.speed.x, this.speed.z, this.speed.y)
+            gl.uniform3f(translation, this.translation.z, this.translation.x, this.translation.y)
+        }
+        else{
+            gl.uniform3f(translation, 0, 0, 0)
         }
 
         function degToRad(d) {
