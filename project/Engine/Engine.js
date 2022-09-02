@@ -61,6 +61,8 @@ export class Engine {
             }
             setTimeout(function () {
                 window.location.reload();
+                window.location.reload();
+                window.location.reload();
             }, 1000);
 
         })
