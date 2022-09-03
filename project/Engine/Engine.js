@@ -237,6 +237,7 @@ export class Engine {
         let program2 = webglUtils.createProgramFromScripts(this.screen_gl, ["3d-vertex-shader", "3d-fragment-shader"])
         // Compute camera coords.
         let camera_coords = this.find_actor_coords()
+        // Load settings
         this.rotation_enabled = false;
         if(localStorage.getItem("rotation")){
             this.rotation_enabled=localStorage.getItem("rotation")==="true"

@@ -277,11 +277,8 @@ export class PhysObject {
         gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
         gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
         // Sets light position
-        if (this.isPlayer) {
-            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
-        } else {
-            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
-        }
+        gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
+        // Sets rotation matrix
         if(rotation) {
             const rotMatX = m4.xRotation(this.translation.x * -1);
             const rotMatZ = m4.yRotation(this.translation.z);
@@ -291,6 +288,7 @@ export class PhysObject {
         else{
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, m4.identity())
         }
+        // Sets offsets
         if(this.isPlayer){
             gl.uniform3fv(gl.getUniformLocation(program, "offsets"), [this.offsets.x, this.offsets.z, this.offsets.y])
         }
@@ -305,7 +303,7 @@ export class PhysObject {
 
         // Tell the shader to use texture unit 0 for diffuseMap
         gl.uniform1i(textureLocation, 0);
-
+        // Sets up translation vector
         let translation = gl.getUniformLocation(program, "translation")
         if (this.isPlayer) {
             gl.uniform3f(translation, this.translation.z, this.translation.x, this.translation.y)
