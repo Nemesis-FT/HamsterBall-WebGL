@@ -76,11 +76,13 @@
                 <p>
                     L'applicazione può essere utilizzata in due modi: o visitando il link del github pages del progetto
                     (<a
-                        href="https://nemesis-ft.github.io/HamsterBall-WebGL/index.html">qui</a>) oppure scaricandolo localmente
+                        href="https://nemesis-ft.github.io/HamsterBall-WebGL/index.html">qui</a>) oppure scaricandolo
+                    localmente
                     dal
                     repository github (<a href="https://github.com/Nemesis-FT/HamsterBall-WebGL">qui</a>), dov'è
                     rilasciato
-                    sotto licenza GPL-3.0, e avviando un webserver con python oppure visualstudio code all'interno della cartella project. Una volta avviato,
+                    sotto licenza GPL-3.0, e avviando un webserver con python oppure visualstudio code all'interno della
+                    cartella project. Una volta avviato,
                     sarà
                     visibile la seguente schermata:
                 </p>
@@ -89,7 +91,8 @@
                 </center>
                 <p>E' possibile interagire con il menu principale con il mouse oppure con il touchscreen. Tramite
                     l'interfaccia, è possibile selezionare il livello, avviare la partita, attivare o disattivare gli
-                    schermi e - se presenti - visualizzare i record del tracciato. Per tornare al menu, in qualsiasi
+                    schermi, attivare o disattivare la rotazione della sfera e - se presenti - visualizzare i record del
+                    tracciato. Per tornare al menu, in qualsiasi
                     momento, è sufficiente premere "esc" sulla tastiera oppure ricaricare la pagina.</p>
                 <hr>
                 <p>Una volta avviata una gara, seguirà un tempo di caricamento: la durata di questo caricamento può
@@ -232,9 +235,13 @@
             <div class="body">
                 <ul>
                     <li>
-                        Fragment e Vertex shader per implementazione del modello di illuminazione come visto a lezione,
+                        Fragment shader che implementa il modello di illuminazione,
                         con supporto per le texture e caratteristiche dei materiali, modello di illuminazione di Phong e
                         flat shading.
+                    </li>
+                    <li>
+                        Vertex shader che consente la rotazione e la traslazione dei modelli, con aggiornamento delle
+                        normali.
                     </li>
                     <li>
                         Utilizzo del contesto webgl per la resa della scena.
@@ -278,6 +285,12 @@
                     </li>
                     <li>
                         Interfaccia utente completamente self-contained all'interno del canvas.
+                    </li>
+                    <li>
+                        Salvataggio di high scores nel localstorage.
+                    </li>
+                    <li>
+                        Trasformazioni interamente gestite dal vertex shader.
                     </li>
                 </ul>
             </div>
