@@ -43,7 +43,7 @@ export class Engine {
         })
         window.addEventListener('level_complete', async (e) => {
             this.advance_timer = false;
-            let time = this.curr_time - this.time_offset
+            let time = this.curr_time
             // Safety countermeasure.
             if (time <= 1000) {
                 return;
