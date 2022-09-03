@@ -279,9 +279,9 @@ export class PhysObject {
         gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
         // Sets light position
         if (this.isPlayer) {
-            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-1, 3, 5]));
+            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
         } else {
-            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-1, 3, 5]));
+            gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
         }
 
         const rotMatX = m4.xRotation(this.translation.x*-1);

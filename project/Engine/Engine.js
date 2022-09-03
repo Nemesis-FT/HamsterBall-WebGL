@@ -43,7 +43,7 @@ export class Engine {
             this.advance_timer = false;
             let time = this.curr_time - this.time_offset
             // Safety countermeasure.
-            if (time <= 0) {
+            if (time <= 1000) {
                 return;
             }
             ui.draw('18pt Calibri', "black", {
@@ -59,11 +59,13 @@ export class Engine {
                 localStorage.setItem(s, "" + time)
                 console.debug(localStorage.getItem(s))
             }
-            setTimeout(function () {
-                window.location.reload();
-                window.location.reload();
-                window.location.reload();
-            }, 1000);
+            for(let i=0; i<10; i++){
+                setTimeout(function () {
+                    console.debug("reloading...")
+                    window.location.reload();
+                }, 1000);
+            }
+
 
         })
         this.gl = this.canvas.getContext("webgl", {antialias: true});

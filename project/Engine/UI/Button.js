@@ -10,7 +10,7 @@ export class Button {
 
     enable() {
         this.canvas.addEventListener("click", this.handle)
-        this.canvas.addEventListener("touchstart", this.handle)
+        this.canvas.addEventListener("touchstart", this.handle, true)
         this.enabled = true;
     }
 
