@@ -200,8 +200,7 @@ export class PhysObject {
         }
     }
 
-    render(gl, light, program, tar, mirrorText, camera_override = null, mirror_mode = false) {
-
+    render(gl, light, program, tar, mirrorText, camera_override = null, mirror_mode = false, rotation) {
         let positionLocation = gl.getAttribLocation(program, "a_position");
         let normalLocation = gl.getAttribLocation(program, "a_normal");
         let texcoordLocation = gl.getAttribLocation(program, "a_texcoord");
@@ -283,11 +282,15 @@ export class PhysObject {
         } else {
             gl.uniform3fv(lightWorldDirectionLocation, m4.normalize([-100, 300, 500]));
         }
-
-        const rotMatX = m4.xRotation(this.translation.x*-1);
-        const rotMatZ = m4.yRotation(this.translation.z);
-        const rotMat = m4.multiply(rotMatX, rotMatZ);
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, rotMat)
+        if(rotation) {
+            const rotMatX = m4.xRotation(this.translation.x * -1);
+            const rotMatZ = m4.yRotation(this.translation.z);
+            const rotMat = m4.multiply(rotMatX, rotMatZ);
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, rotMat)
+        }
+        else{
+            gl.uniformMatrix4fv(gl.getUniformLocation(program, 'u_normalMatrix'), false, m4.identity())
+        }
         if(this.isPlayer){
             gl.uniform3fv(gl.getUniformLocation(program, "offsets"), [this.offsets.x, this.offsets.z, this.offsets.y])
         }

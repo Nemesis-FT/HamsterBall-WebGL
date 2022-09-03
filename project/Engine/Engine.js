@@ -5,6 +5,7 @@ import {LevelSelectButton} from "./UI/LevelSelectButton.js";
 import {StartButton} from "./UI/StartButton.js";
 import {ScreenButton} from "./UI/ScreenButton.js";
 import {MainMenuButton} from "./UI/MainMenuButton.js";
+import {RotationEnablerButton} from "./UI/RotationEnablerButton.js";
 /*
 This is the Engine class of the SlingShot Engine. It loads up meshes from a Scene type object, and then computes
 the physics, reads player input and renders the scene.
@@ -33,6 +34,7 @@ export class Engine {
         this.nextlevel = "";
         this.advance_timer = true;
         this.time_reset = false
+        this.rotation_enabled = false
         // A bunch of custom event listeners. loadlevel-pre prepares loadup of a new scene, while level_complete stops
         // the timer and then puts the player back to menu, while updating high scores.
         window.addEventListener('loadlevel_pre', async (e) => {
@@ -46,10 +48,6 @@ export class Engine {
             if (time <= 1000) {
                 return;
             }
-            ui.draw('18pt Calibri', "black", {
-                x: this.gl.canvas.width / 2,
-                y: 20
-            }, "Level completed in " + time + "s.")
             // Data is saved in the localstorage.
             let s = localStorage.getItem("level")
             let best = localStorage.getItem(s);
@@ -59,6 +57,7 @@ export class Engine {
                 localStorage.setItem(s, "" + time)
                 console.debug(localStorage.getItem(s))
             }
+
             for(let i=0; i<10; i++){
                 setTimeout(function () {
                     console.debug("reloading...")
@@ -95,10 +94,10 @@ export class Engine {
         }, ui.canvas, ui.ctx, levelNames)
         this.btn1 = new StartButton("Start", {
             coordinates: {
-                x: this.gl.canvas.width / 2 - this.btn.geometry.width / 4 - 10,
-                y: this.btn.geometry.height + this.gl.canvas.height / 2 + 10
+                x: this.gl.canvas.width / 2,
+                y: this.btn.geometry.height + this.gl.canvas.height / 2 + 60 + 10
             },
-            width: 230,
+            width: 500,
             height: 50
         }, ui.canvas, ui.ctx, this.btn.idx, levels)
         this.btn2 = new ScreenButton({
@@ -109,6 +108,14 @@ export class Engine {
             width: 230,
             height: 50
         }, ui.canvas, ui.ctx, "Screens OFF", "Screens ON")
+        this.btn3 = new RotationEnablerButton({
+            coordinates: {
+                x: this.gl.canvas.width / 2 - this.btn.geometry.width / 4 - 10,
+                y: this.btn.geometry.height + this.gl.canvas.height / 2 + 10
+            },
+            width: 230,
+            height: 50
+        },ui.canvas, ui.ctx, "Rotation OFF", "Rotation ON")
         this.btnMain = new MainMenuButton("Quit", {coordinates: {x:100, y:25}, width:200, height:50}, ui.canvas, ui.ctx)
     }
 
@@ -207,15 +214,16 @@ export class Engine {
         if(this.time_reset){
             if(time!==0){
                 if (this.scene_curr.name !== "menu") {
-                    console.debug("Not on main menu")
                     this.btn.disable()
                     this.btn1.disable()
                     this.btn2.disable()
+                    this.btn3.disable()
                     this.btnMain.enable()
                 } else {
                     this.btn.enable()
                     this.btn1.enable()
                     this.btn2.enable()
+                    this.btn3.enable()
                     this.btnMain.disable()
                 }
                 this.time_reset = false
@@ -229,6 +237,21 @@ export class Engine {
         let program2 = webglUtils.createProgramFromScripts(this.screen_gl, ["3d-vertex-shader", "3d-fragment-shader"])
         // Compute camera coords.
         let camera_coords = this.find_actor_coords()
+        this.rotation_enabled = false;
+        if(localStorage.getItem("rotation")){
+            this.rotation_enabled=localStorage.getItem("rotation")==="true"
+        }
+        this.btn3.value = this.rotation_enabled
+        this.btn3.update()
+
+        if(localStorage.getItem("screens")){
+            this.screen_enabled = localStorage.getItem("screens") === "true"
+        }
+
+        this.btn2.value = this.screen_enabled;
+        this.btn2.update()
+
+
         if (!this.die) {
             // Main rendering loop.
             this.gl.useProgram(program);
@@ -252,7 +275,7 @@ export class Engine {
                             z: 3.5,
                             y: -11
                         }
-                    }), true);
+                    }), true, this.rotation_enabled);
                 })
             }
             // Renders the entire scene from the player's POV.
@@ -264,12 +287,12 @@ export class Engine {
                 elem.render(this.gl, {
                     ambientLight: [0.2, 0.2, 0.2],
                     colorLight: [1.0, 1.0, 1.0]
-                }, program, camera_coords, reflection);
+                }, program, camera_coords, reflection, null,false, this.rotation_enabled);
             })
             if (this.scene_curr.name !== "menu") {
                 // UI control for level mode
 
-                this.screen_enabled = localStorage.getItem("mirrors") === "true"
+
                 if (this.advance_timer) {
                     this.curr_time = time - this.time_offset;
                 }
@@ -279,20 +302,21 @@ export class Engine {
                 ui.draw('18pt Calibri', "black", {x: this.gl.canvas.width / 2, y: 40}, ((this.curr_time) / 1000).toFixed(3))
                 if (!this.advance_timer) {
                     ui.draw('18pt Calibri', "red", {x: this.gl.canvas.width / 2, y: 60}, "Level complete!")
+                    ui.draw('18pt Calibri', "black", {
+                        x: this.gl.canvas.width / 2,
+                        y: 100
+                    }, "Press 'Quit' to return to main menu.")
                 }
             } else {
                 // Ui control for main menu.
                 localStorage.setItem("level", levels[this.btn1.levelId])
-                this.screen_enabled = this.btn2.value;
-                if (this.screen_enabled) {
-                    localStorage.setItem("mirrors", "true")
-                } else {
-                    localStorage.setItem("mirrors", "false")
-                }
+
+
                 ui.clear()
                 this.btn.draw()
                 this.btn1.draw()
                 this.btn2.draw()
+                this.btn3.draw()
                 offset = time
                 ui.draw('14pt Calibri', "black", {
                     x: this.gl.canvas.width / 2,
@@ -302,7 +326,7 @@ export class Engine {
                 if (best) {
                     ui.draw('14pt Calibri', "black", {
                         x: this.gl.canvas.width / 2,
-                        y: this.gl.canvas.height / 2 + 120
+                        y: this.gl.canvas.height / 2 + 180
                     }, "Your best time is " + (best / 1000).toFixed(3) + "s")
                 }
 
@@ -337,7 +361,7 @@ export class Engine {
             window.dispatchEvent(new CustomEvent('loadlevel', {detail: {scene: this.nextlevel}}))
             this.meshlist = []
             this.curr_time = -1
-            this.btn1.enabled = this.btn2.enabled = this.btn.enabled = this.btnMain.enabled = false
+            this.btn1.enabled = this.btn2.enabled = this.btn.enabled = this.btnMain.enabled = this.btn3.enabled = false
             window.cancelAnimationFrame(this.animId)
         }
 
