@@ -235,6 +235,19 @@
         "y": 13.0,
         "z": 0.0
       }
+    },
+    {
+      "alias": "Sponsor_002",
+      "path": "Models/Sponsor_002.obj",
+      "player": "false",
+      "active": "false",
+      "screen": "false",
+      "collider": "box",
+      "coords": {
+        "x": -6.662961006164551,
+        "y": -11.597229957580566,
+        "z": 7.722615718841553
+      }
     }
   ]
 }
